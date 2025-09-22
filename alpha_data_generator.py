@@ -16,8 +16,17 @@ project_client = AIProjectClient(
 )
 agent = project_client.agents.get_agent(AGENT_ID)
 
-def generate_chunk(start_id, chunk_size):
-    """Generate a chunk of pension data"""
+def generate_chunk(start_id, chunk_size, output_file="generated_pension_data.csv"):
+    """Generate a chunk of pension data
+    
+    Args:
+        start_id (int): Starting member ID number
+        chunk_size (int): Number of records to generate
+        output_file (str): Output CSV filename
+        
+    Returns:
+        bool: Success status
+    """
     generation_prompt = f"""Generate {chunk_size} rows of synthetic pension member data as a CSV table. 
     Member IDs should start from MB{start_id:08d} and increment by 1 for each record. Start immediately with the header row followed by data rows. Follow these EXACT specifications carefully:
 
@@ -27,36 +36,44 @@ MemberID,Age,Gender,Postcode,Sector,JobGrade,AnnualSalary,YearsService,Status
 Data requirements:
 1. MemberID: STRICT format "MB" followed by exactly 8 digits (e.g., MB12345678). Each ID must be unique.
 
-2. Age Distribution (MUST match these percentages exactly):
-   - 22-35: 40% of records
-   - 36-45: 25% of records
-   - 46-55: 25% of records
-   - 56-75: 10% of records
+2. Age Distribution (MUST match these percentages exactly for {chunk_size} records):
+   DETAILED AGE BRACKETS:
+   - 22-27: 15% of records ({int(chunk_size * 0.15)} records)
+   - 28-32: 15% of records ({int(chunk_size * 0.15)} records)  
+   - 33-35: 10% of records ({int(chunk_size * 0.10)} records)
+   - 36-40: 15% of records ({int(chunk_size * 0.15)} records)
+   - 41-45: 10% of records ({int(chunk_size * 0.10)} records)
+   - 46-50: 15% of records ({int(chunk_size * 0.15)} records)
+   - 51-55: 10% of records ({int(chunk_size * 0.10)} records)
+   - 56-65: 7% of records ({int(chunk_size * 0.07)} records)
+   - 66-75: 3% of records ({int(chunk_size * 0.03)} records)
+   
+   SUMMARY: Young Adults (22-35): 40%, Mid-Career (36-45): 25%, Experienced (46-55): 25%, Senior (56-75): 10%
 
-3. Gender: EXACTLY these proportions:
-   - M: 49% of records
-   - F: 50% of records
-   - O: 1% of records
+3. Gender: EXACTLY these proportions for {chunk_size} records:
+   - M: 49% of records ({int(chunk_size * 0.49)} records)
+   - F: 50% of records ({int(chunk_size * 0.50)} records)
+   - O: 1% of records ({int(chunk_size * 0.01)} records)
 
-4. Postcode: Valid UK format only. Use these EXACT formats for major cities:
-   London: EC1A 1BB, SW1A 1AA, W1A 1AA, E1 6AN, N1 9GU
-   Manchester: M1 1AA, M2 5BQ, M3 3EB
-   Birmingham: B1 1HQ, B2 4QA, B3 3DH
-   Glasgow: G1 1XW, G2 8DL
-   Edinburgh: EH1 1BB, EH2 2ER
-   Cardiff: CF10 1DD, CF11 9LJ
-   Liverpool: L1 8JQ, L2 2PP
-   Leeds: LS1 1UR, LS2 8JS
-   Bristol: BS1 4TR, BS2 0FZ
+4. Postcode: Valid UK format with ANONYMIZED second half. Use these EXACT formats for major cities (second half anonymized with XXX):
+   London: EC1A XXX, SW1A XXX, W1A XXX, E1 XXX, N1 XXX
+   Manchester: M1 XXX, M2 XXX, M3 XXX
+   Birmingham: B1 XXX, B2 XXX, B3 XXX
+   Glasgow: G1 XXX, G2 XXX
+   Edinburgh: EH1 XXX, EH2 XXX
+   Cardiff: CF10 XXX, CF11 XXX
+   Liverpool: L1 XXX, L2 XXX
+   Leeds: LS1 XXX, LS2 XXX
+   Bristol: BS1 XXX, BS2 XXX
 
-5. Sector Distribution (MUST match exactly):
-   - Finance: 15%
-   - Manufacturing: 12%
-   - Public Service: 18%
-   - Healthcare: 13%
-   - Education: 10%
-   - Retail: 8%
-   - Other: 24%
+5. Sector Distribution (MUST match exactly for {chunk_size} records):
+   - Finance: 15% ({int(chunk_size * 0.15)} records)
+   - Manufacturing: 12% ({int(chunk_size * 0.12)} records)
+   - Public Service: 18% ({int(chunk_size * 0.18)} records)
+   - Healthcare: 13% ({int(chunk_size * 0.13)} records)
+   - Education: 10% ({int(chunk_size * 0.10)} records)
+   - Retail: 8% ({int(chunk_size * 0.08)} records)
+   - Other: 24% ({int(chunk_size * 0.24)} records)
 
 6. JobGrade: Use these EXACT titles by sector:
    Finance: [Analyst, Senior Analyst, Associate, Manager, Senior Manager, Director]
@@ -81,10 +98,10 @@ Data requirements:
    - Typically 20-40% of working age
    - More years of service in public sector roles
 
-9. Status Distribution:
-   - Active: 70%
-   - Deferred: 20%
-   - Pensioner: 10% (must be age 55+)
+9. Status Distribution for {chunk_size} records:
+   - Active: 70% ({int(chunk_size * 0.70)} records)
+   - Deferred: 20% ({int(chunk_size * 0.20)} records)
+   - Pensioner: 10% ({int(chunk_size * 0.10)} records - must be age 55+)
 
 Important:
 - Provide ONLY the CSV data with no explanations or markdown
@@ -97,9 +114,9 @@ Important:
 - Provide ONLY the CSV data with no explanations or markdown
 - Start with the header row immediately
 - Ensure exact column names and proper CSV formatting
-- Include {num_records} data rows
+- Include {chunk_size} data rows
 - Maintain data integrity and realistic correlations
-- Use only realistic UK postcodes
+- Use only realistic UK postcodes with anonymized second half (XXX format)
 - Ensure no real PII is included"""
 
     try:
@@ -139,16 +156,13 @@ Important:
             
         last_message = agent_messages[-1].text_messages[-1].text.value
         
-        # Save the generated data
-        output_file = "generated_pension_data.csv"
-        
         # Clean up the response to remove any markdown or code formatting
         clean_data = last_message.replace('```plaintext\n', '').replace('```', '').strip()
         
         with open(output_file, "w") as f:
             f.write(clean_data)
         
-        print(f"✅ Successfully generated {num_records} pension records")
+        print(f"✅ Successfully generated {chunk_size} pension records")
         print(f"📁 Data saved to: {output_file}")
         return True
 
@@ -160,6 +174,157 @@ Important:
         print("2. Check that your virtual environment is activated (.venv)")
         print("3. Ensure you have access to the Azure AI Foundry project")
         return False
+
+def generate_pension_data(num_records=REQUIRED_RECORDS, output_file="generated_pension_data.csv", start_id=1):
+    """Generate pension data with specified parameters
+    
+    Args:
+        num_records (int): Number of records to generate
+        output_file (str): Output CSV filename
+        start_id (int): Starting ID for member records
+        
+    Returns:
+        bool: Success status
+    """
+    try:
+        print(f"🚀 Starting pension data generation...")
+        print(f"📊 Records to generate: {num_records}")
+        print(f"📁 Output file: {output_file}")
+        print(f"🆔 Starting ID: MB{start_id:08d}")
+        
+        # For large datasets, generate in chunks to avoid Azure AI token limits
+        MAX_CHUNK_SIZE = 1000  # Azure AI works well with up to 1000 records per request
+        
+        if num_records <= MAX_CHUNK_SIZE:
+            # Small dataset - generate in one go
+            success = generate_chunk(start_id, num_records, output_file)
+        else:
+            # Large dataset - generate in chunks and combine
+            print(f"📦 Large dataset detected - generating in chunks of {MAX_CHUNK_SIZE}")
+            success = generate_large_dataset(num_records, output_file, start_id, MAX_CHUNK_SIZE)
+        
+        if success:
+            print(f"✅ Generation completed successfully!")
+            return True
+        else:
+            print(f"❌ Generation failed!")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error in main generation function: {str(e)}")
+        return False
+
+def generate_large_dataset(total_records, output_file, start_id, chunk_size):
+    """Generate large datasets by breaking into chunks and combining
+    
+    Args:
+        total_records (int): Total number of records to generate
+        output_file (str): Final output CSV filename
+        start_id (int): Starting ID for member records
+        chunk_size (int): Size of each chunk
+        
+    Returns:
+        bool: Success status
+    """
+    import pandas as pd
+    import tempfile
+    import os
+    
+    try:
+        # Calculate number of chunks needed
+        num_chunks = (total_records + chunk_size - 1) // chunk_size  # Ceiling division
+        
+        print(f"📊 Generating {total_records} records in {num_chunks} chunks of {chunk_size}")
+        
+        temp_files = []
+        current_id = start_id
+        
+        # Generate each chunk
+        for chunk_num in range(num_chunks):
+            remaining_records = total_records - (chunk_num * chunk_size)
+            current_chunk_size = min(chunk_size, remaining_records)
+            
+            print(f"🔄 Generating chunk {chunk_num + 1}/{num_chunks} ({current_chunk_size} records)")
+            
+            # Create temporary file for this chunk
+            temp_file = f"temp_chunk_{chunk_num}.csv"
+            temp_files.append(temp_file)
+            
+            # Generate chunk
+            success = generate_chunk(current_id, current_chunk_size, temp_file)
+            
+            if not success:
+                print(f"❌ Failed to generate chunk {chunk_num + 1}")
+                # Clean up temp files
+                for tf in temp_files:
+                    if os.path.exists(tf):
+                        os.remove(tf)
+                return False
+            
+            current_id += current_chunk_size
+            print(f"✅ Chunk {chunk_num + 1} completed")
+        
+        # Combine all chunks into final file
+        print(f"🔗 Combining {len(temp_files)} chunks into final file...")
+        combined_df = None
+        
+        for i, temp_file in enumerate(temp_files):
+            if os.path.exists(temp_file):
+                chunk_df = pd.read_csv(temp_file)
+                
+                if combined_df is None:
+                    combined_df = chunk_df
+                else:
+                    combined_df = pd.concat([combined_df, chunk_df], ignore_index=True)
+                
+                # Clean up temp file
+                os.remove(temp_file)
+                print(f"✅ Merged chunk {i + 1}")
+        
+        # Save final combined file
+        if combined_df is not None:
+            combined_df.to_csv(output_file, index=False)
+            print(f"💾 Final dataset saved with {len(combined_df)} records")
+            return True
+        else:
+            print("❌ No data to save")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error in large dataset generation: {str(e)}")
+        # Clean up any remaining temp files
+        for tf in temp_files:
+            if os.path.exists(tf):
+                os.remove(tf)
+        return False
+
+def validate_age_brackets(chunk_size):
+    """Validate that age bracket calculations sum to 100% for given chunk size"""
+    
+    brackets = {
+        "22-27": 0.15,
+        "28-32": 0.15, 
+        "33-35": 0.10,
+        "36-40": 0.15,
+        "41-45": 0.10,
+        "46-50": 0.15,
+        "51-55": 0.10,
+        "56-65": 0.07,
+        "66-75": 0.03
+    }
+    
+    total_percentage = sum(brackets.values())
+    total_records = sum(int(chunk_size * percentage) for percentage in brackets.values())
+    
+    print(f"📊 Age Bracket Validation for {chunk_size} records:")
+    print(f"   Total percentage: {total_percentage:.2%}")
+    print(f"   Calculated records: {total_records}/{chunk_size}")
+    print(f"   Difference: {chunk_size - total_records} records")
+    
+    if abs(total_percentage - 1.0) > 0.01:
+        print(f"⚠️  Warning: Percentages don't sum to 100% ({total_percentage:.2%})")
+    
+    return brackets
 
 if __name__ == "__main__":
     generate_pension_data()

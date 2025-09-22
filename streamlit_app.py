@@ -561,34 +561,231 @@ def setup_ai_configuration():
             st.markdown("Run: `az login --scope https://ai.azure.com/.default`")
 
 def data_generation_interface():
-    """Main data generation interface"""
+    """Main data generation interface with alpha data generator integration"""
     st.header("🎯 SYNTHETIC DATA GENERATION OPERATIONS")
+    st.markdown("**Generate high-quality synthetic pension data using Azure AI Foundry**")
     
-    if not st.session_state.generator:
-        st.warning("⚠️ Please configure AI connection first")
-        return
+    # Configuration tabs
+    tab1, tab2 = st.tabs(["🎯 Alpha Generator", "⚙️ Advanced Settings"])
     
-    # Generation parameters
-    col1, col2, col3 = st.columns(3)
+    with tab1:
+        st.markdown("#### Alpha Data Generator Configuration")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**📊 Data Parameters**")
+            num_records = st.number_input(
+                "Number of Records", 
+                min_value=10, 
+                max_value=50000, 
+                value=5000, 
+                step=100,
+                help="Total number of pension member records to generate (optimized for large datasets)"
+            )
+            
+            start_id = st.number_input(
+                "Starting Member ID", 
+                min_value=1, 
+                max_value=99999999, 
+                value=1, 
+                step=1,
+                help="Starting ID for member records (format: MB{start_id:08d})"
+            )
+        
+        with col2:
+            st.markdown("**📁 Output Settings**")
+            output_filename = st.text_input(
+                "Output Filename", 
+                value="generated_pension_data.csv",
+                help="Name of the output CSV file"
+            )
+            
+            preview_id = f"MB{start_id:08d}"
+            st.info(f"First Member ID: {preview_id}")
+            st.info(f"Last Member ID: MB{start_id + num_records - 1:08d}")
+            
+            # Show distribution calculations
+            if num_records >= 1000:
+                st.markdown("**📊 Distribution Preview:**")
+                st.caption(f"Young Adults (22-35): {int(num_records * 0.40)} records")
+                st.caption(f"Mid-Career (36-45): {int(num_records * 0.25)} records")
+                st.caption(f"Experienced (46-55): {int(num_records * 0.25)} records")
+                st.caption(f"Senior (56-75): {int(num_records * 0.10)} records")
+        
+        with col3:
+            st.markdown("**🔧 Generation Status**")
+            if 'last_generation' in st.session_state:
+                last_gen = st.session_state.last_generation
+                st.success(f"✅ Last: {last_gen['records']} records")
+                st.info(f"📁 File: {last_gen['filename']}")
+                st.caption(f"Generated: {last_gen['timestamp']}")
+            else:
+                st.info("No previous generation")
+        
+        # Generation button
+        st.markdown("---")
+        if st.button("🚀 GENERATE PENSION DATA", type="primary", width='stretch'):
+            execute_alpha_data_generation(num_records, output_filename, start_id)
     
-    with col1:
-        member_count = st.number_input("Target Member Count", min_value=10, max_value=10000, value=100, step=10)
-        include_contributions = st.checkbox("Generate Contribution History", value=True)
-        include_allocations = st.checkbox("Generate Fund Allocations", value=True)
+    with tab2:
+        st.markdown("#### Advanced Generation Settings")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**🎛️ AI Parameters**")
+            st.info("These settings are pre-configured in the Azure AI agent:")
+            st.markdown("""
+            - **Detailed Age Brackets**: 22-27 (15%), 28-32 (15%), 33-35 (10%), 36-40 (15%), 41-45 (10%), 46-50 (15%), 51-55 (10%), 56-65 (7%), 66-75 (3%)
+            - **Gender**: Male (49%), Female (50%), Other (1%)
+            - **Sectors**: Finance (15%), Manufacturing (12%), Public Service (18%), Healthcare (13%), Education (10%), Retail (8%), Other (24%)
+            - **Postcodes**: UK format with anonymized second half (e.g., M1 XXX, B2 XXX)
+            - **Status**: Active (70%), Deferred (20%), Pensioner (10%)
+            """)
+        
+        with col2:
+            st.markdown("**📋 Data Validation**")
+            st.markdown("""
+            - ✅ UK Postcode validation (anonymized format)
+            - ✅ Salary ranges by sector
+            - ✅ Age-service correlation
+            - ✅ Realistic job grades
+            - ✅ Status distribution logic
+            - ✅ Privacy protection (no real PII)
+            """)
+        
+        # Azure connection status
+        st.markdown("#### 🔗 Azure AI Connection")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info("**Project**: ais-hack-u5nxuil7gjgjq.services.ai.azure.com")
+        with col2:
+            st.info("**Agent ID**: asst_YRz6huPVHYlT3Dwvm5cVlVi0")
+
+def execute_alpha_data_generation(num_records, output_filename, start_id):
+    """Execute data generation using alpha_data_generator.py"""
     
-    with col2:
-        batch_size = st.selectbox("Batch Size", [10, 25, 50, 100], index=2)
-        temperature = st.slider("AI Creativity Level", 0.1, 1.0, 0.7, 0.1)
-        include_edge_cases = st.checkbox("Include Edge Cases", value=True)
-    
-    with col3:
-        sample_size = st.number_input("Sample Size (%)", min_value=10, max_value=100, value=20, step=10)
-        st.info(f"Will generate detailed records for {int(member_count * sample_size / 100)} members")
-    
-    # Generation progress
-    if st.button("🚀 EXECUTE MISSION", type="primary", use_container_width=True):
-        execute_data_generation(member_count, batch_size, temperature, include_contributions, 
-                               include_allocations, sample_size, include_edge_cases)
+    # Import the alpha data generator
+    try:
+        import sys
+        import os
+        sys.path.append(os.path.dirname(__file__))
+        from alpha_data_generator import generate_pension_data
+        
+        # Create progress indicators
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        status_text.text("🚀 Initializing Azure AI connection...")
+        progress_bar.progress(0.1)
+        
+        status_text.text(f"📊 Preparing to generate {num_records} records...")
+        progress_bar.progress(0.2)
+        
+        status_text.text("🤖 Sending request to Azure AI Foundry agent...")
+        progress_bar.progress(0.3)
+        
+        # Execute the generation
+        with st.spinner("🔄 Azure AI is generating your pension data..."):
+            success = generate_pension_data(
+                num_records=num_records,
+                output_file=output_filename,
+                start_id=start_id
+            )
+        
+        progress_bar.progress(0.8)
+        
+        if success:
+            progress_bar.progress(1.0)
+            status_text.text("✅ Data generation completed successfully!")
+            
+            # Store generation info in session state
+            st.session_state.last_generation = {
+                'records': num_records,
+                'filename': output_filename,
+                'timestamp': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'start_id': start_id
+            }
+            
+            st.success(f"🎉 Successfully generated {num_records} pension records!")
+            st.info(f"📁 Data saved to: {output_filename}")
+            
+            # Show preview if file exists
+            if os.path.exists(output_filename):
+                st.markdown("#### � Data Preview")
+                try:
+                    preview_df = pd.read_csv(output_filename)
+                    st.dataframe(preview_df.head(10), width='stretch')
+                    
+                    st.markdown("#### 📊 Quick Statistics")
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Total Records", len(preview_df))
+                    with col2:
+                        # Create age brackets for better analysis
+                        age_brackets = pd.cut(preview_df['Age'], 
+                                            bins=[21, 35, 45, 55, 75], 
+                                            labels=['22-35', '36-45', '46-55', '56-75'],
+                                            include_lowest=True)
+                        age_dist = age_brackets.value_counts().sort_index()
+                        most_common_bracket = age_dist.idxmax()
+                        bracket_pct = (age_dist.max() / len(preview_df)) * 100
+                        st.metric("Top Age Bracket", f"{most_common_bracket} ({bracket_pct:.1f}%)")
+                    with col3:
+                        st.metric("Sectors", preview_df['Sector'].nunique())
+                    with col4:
+                        st.metric("Avg Salary", f"£{preview_df['AnnualSalary'].mean():,.0f}")
+                    
+                    # Enhanced age bracket breakdown
+                    st.markdown("#### 👥 Age Bracket Distribution")
+                    age_col1, age_col2 = st.columns(2)
+                    
+                    with age_col1:
+                        for bracket in age_dist.index:
+                            count = age_dist[bracket]
+                            percentage = (count / len(preview_df)) * 100
+                            st.metric(f"Ages {bracket}", f"{count} ({percentage:.1f}%)")
+                    
+                    with age_col2:
+                        # Gender and sector breakdown
+                        st.markdown("**Gender Distribution:**")
+                        gender_dist = preview_df['Gender'].value_counts()
+                        for gender, count in gender_dist.items():
+                            pct = (count / len(preview_df)) * 100
+                            st.write(f"• {gender}: {count} ({pct:.1f}%)")
+                        
+                        st.markdown("**Top 3 Sectors:**")
+                        sector_dist = preview_df['Sector'].value_counts().head(3)
+                        for sector, count in sector_dist.items():
+                            pct = (count / len(preview_df)) * 100
+                            st.write(f"• {sector}: {count} ({pct:.1f}%)")
+                        
+                except Exception as e:
+                    st.warning(f"Could not load preview: {str(e)}")
+            
+        else:
+            progress_bar.progress(0.0)
+            status_text.text("❌ Data generation failed!")
+            st.error("❌ Data generation failed. Please check the console output for details.")
+            st.markdown("### 🔍 Troubleshooting Tips:")
+            st.markdown("""
+            1. **Azure Authentication**: Make sure you're signed in with correct scope:
+               ```bash
+               az login --scope https://ai.azure.com/.default
+               ```
+            2. **Virtual Environment**: Ensure your virtual environment is activated
+            3. **Network Connection**: Check your internet connection
+            4. **Azure AI Access**: Verify you have access to the Azure AI Foundry project
+            """)
+            
+    except ImportError as e:
+        st.error(f"❌ Could not import alpha_data_generator: {str(e)}")
+        st.info("Make sure alpha_data_generator.py is in the same directory as this app.")
+    except Exception as e:
+        st.error(f"❌ Unexpected error during data generation: {str(e)}")
+        import traceback
+        st.code(traceback.format_exc())
 
 def execute_data_generation(member_count, batch_size, temperature, include_contributions, 
                           include_allocations, sample_size, include_edge_cases):
@@ -1543,107 +1740,185 @@ def export_realism_report(results: dict):
     )
 
 def data_export_interface():
-    """Data export and download interface"""
+    """Enhanced data export and download interface"""
     st.header("📁 DATA EXPORT & INTELLIGENCE SHARING")
     
-    if not st.session_state.generated_data:
+    # Check for available CSV files
+    import glob
+    csv_files = glob.glob("*.csv")
+    generated_files = [f for f in csv_files if 'generated' in f.lower() or 'pension' in f.lower()]
+    
+    if not generated_files:
         st.info("🔍 Generate data first to access export options")
+        st.markdown("Go to **🎯 Synthetic Data Generation** tab to create data files")
         return
     
-    data = st.session_state.generated_data
-    timestamp = data['timestamp']
+    st.markdown("### 📊 Available Data Files")
     
-    col1, col2 = st.columns(2)
+    for file in generated_files:
+        with st.expander(f"📄 {file}"):
+            try:
+                df = pd.read_csv(file)
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Total Records", len(df))
+                    st.metric("Columns", len(df.columns))
+                
+                with col2:
+                    if 'Age' in df.columns:
+                        # Create age brackets for analysis
+                        age_brackets = pd.cut(df['Age'], 
+                                            bins=[21, 35, 45, 55, 75], 
+                                            labels=['22-35', '36-45', '46-55', '56-75'],
+                                            include_lowest=True)
+                        age_dist = age_brackets.value_counts().sort_index()
+                        most_common_bracket = age_dist.idxmax()
+                        st.metric("Top Age Bracket", most_common_bracket)
+                    
+                    if 'AnnualSalary' in df.columns:
+                        st.metric("Avg Salary", f"£{df['AnnualSalary'].mean():,.0f}")
+                
+                with col3:
+                    # File info
+                    file_size = os.path.getsize(file) / 1024  # KB
+                    st.metric("File Size", f"{file_size:.1f} KB")
+                    
+                    # Last modified
+                    import datetime
+                    mod_time = os.path.getmtime(file)
+                    mod_date = datetime.datetime.fromtimestamp(mod_time)
+                    st.metric("Modified", mod_date.strftime("%H:%M"))
+                
+                # Age bracket distribution
+                if 'Age' in df.columns:
+                    st.markdown("**Age Bracket Distribution:**")
+                    bracket_col1, bracket_col2 = st.columns(2)
+                    
+                    with bracket_col1:
+                        for i, (bracket, count) in enumerate(age_dist.items()):
+                            if i < 2:  # First 2 brackets
+                                pct = (count / len(df)) * 100
+                                st.write(f"• {bracket}: {count} ({pct:.1f}%)")
+                    
+                    with bracket_col2:
+                        for i, (bracket, count) in enumerate(age_dist.items()):
+                            if i >= 2:  # Last 2 brackets
+                                pct = (count / len(df)) * 100
+                                st.write(f"• {bracket}: {count} ({pct:.1f}%)")
+                
+                # Data preview
+                st.markdown("**Data Preview:**")
+                st.dataframe(df.head(5), width='stretch')
+                
+                # Enhanced export options
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Download original file
+                    with open(file, 'r') as f:
+                        csv_data = f.read()
+                    st.download_button(
+                        label=f"📥 Download {file}",
+                        data=csv_data,
+                        file_name=file,
+                        mime="text/csv"
+                    )
+                
+                with col2:
+                    # Download with timestamp
+                    timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                    filename_with_timestamp = f"{file.replace('.csv', '')}_{timestamp}.csv"
+                    st.download_button(
+                        label=f"📥 Download with Timestamp",
+                        data=csv_data,
+                        file_name=filename_with_timestamp,
+                        mime="text/csv"
+                    )
+                
+                with col3:
+                    # Download filtered data (e.g., specific age brackets)
+                    if st.button(f"🎯 Filter & Download", key=f"filter_{file}"):
+                        st.session_state[f"show_filter_{file}"] = True
+                
+                # Show filtering options if requested
+                if st.session_state.get(f"show_filter_{file}", False):
+                    st.markdown("**Filter Options:**")
+                    filter_col1, filter_col2 = st.columns(2)
+                    
+                    with filter_col1:
+                        if 'Age' in df.columns:
+                            selected_brackets = st.multiselect(
+                                "Select Age Brackets",
+                                options=age_dist.index.tolist(),
+                                default=age_dist.index.tolist(),
+                                key=f"age_filter_{file}"
+                            )
+                    
+                    with filter_col2:
+                        if 'Sector' in df.columns:
+                            available_sectors = df['Sector'].unique()
+                            selected_sectors = st.multiselect(
+                                "Select Sectors",
+                                options=available_sectors,
+                                default=available_sectors.tolist(),
+                                key=f"sector_filter_{file}"
+                            )
+                    
+                    if st.button(f"📥 Download Filtered Data", key=f"download_filtered_{file}"):
+                        filtered_df = df.copy()
+                        
+                        # Apply age bracket filter
+                        if 'Age' in df.columns and selected_brackets:
+                            age_brackets_full = pd.cut(df['Age'], 
+                                                     bins=[21, 35, 45, 55, 75], 
+                                                     labels=['22-35', '36-45', '46-55', '56-75'],
+                                                     include_lowest=True)
+                            filtered_df = filtered_df[age_brackets_full.isin(selected_brackets)]
+                        
+                        # Apply sector filter
+                        if 'Sector' in df.columns and selected_sectors:
+                            filtered_df = filtered_df[filtered_df['Sector'].isin(selected_sectors)]
+                        
+                        filtered_csv = filtered_df.to_csv(index=False)
+                        filtered_filename = f"{file.replace('.csv', '')}_filtered_{timestamp}.csv"
+                        
+                        st.download_button(
+                            label=f"💾 Download {filtered_filename}",
+                            data=filtered_csv,
+                            file_name=filtered_filename,
+                            mime="text/csv"
+                        )
+                        
+                        st.success(f"✅ Filtered data ready: {len(filtered_df)} records")
+                
+            except Exception as e:
+                st.error(f"❌ Error reading {file}: {str(e)}")
     
-    with col1:
-        st.subheader("📊 Dataset Overview")
-        st.metric("Member Profiles", len(data['profiles']))
-        st.metric("Contribution Records", len(data.get('contributions', [])))
-        st.metric("Fund Allocations", len(data.get('allocations', [])))
-        st.metric("Generation Timestamp", timestamp)
-    
-    with col2:
-        st.subheader("🎯 Export Options")
+    # Batch export options
+    if len(generated_files) > 1:
+        st.markdown("### 📦 Batch Export Options")
         
-        # Individual file downloads
-        if st.button("📥 Download Member Profiles CSV"):
-            profiles_df = pd.DataFrame([asdict(p) for p in data['profiles']])
-            csv = profiles_df.to_csv(index=False)
+        if st.button("�️ Download All Files as ZIP"):
+            import zipfile
+            import io
+            
+            zip_buffer = io.BytesIO()
+            
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for file in generated_files:
+                    zip_file.write(file, file)
+            
+            zip_buffer.seek(0)
+            timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+            
             st.download_button(
-                label="💾 Download pension_members.csv",
-                data=csv,
-                file_name=f"pension_members_{timestamp}.csv",
-                mime="text/csv"
+                label="� Download mission_alpha_data.zip",
+                data=zip_buffer.getvalue(),
+                file_name=f"mission_alpha_data_{timestamp}.zip",
+                mime="application/zip"
             )
-        
-        if data.get('contributions') and st.button("📥 Download Contributions CSV"):
-            contributions_df = pd.DataFrame([asdict(c) for c in data['contributions']])
-            csv = contributions_df.to_csv(index=False)
-            st.download_button(
-                label="💾 Download pension_contributions.csv",
-                data=csv,
-                file_name=f"pension_contributions_{timestamp}.csv",
-                mime="text/csv"
-            )
-        
-        if data.get('allocations') and st.button("📥 Download Allocations CSV"):
-            allocations_df = pd.DataFrame([asdict(a) for a in data['allocations']])
-            csv = allocations_df.to_csv(index=False)
-            st.download_button(
-                label="💾 Download pension_allocations.csv",
-                data=csv,
-                file_name=f"pension_allocations_{timestamp}.csv",
-                mime="text/csv"
-            )
-    
-    # Complete dataset download
-    st.subheader("📦 Complete Mission Package")
-    
-    if st.button("🎖️ Download Complete Intelligence Package", type="primary"):
-        # Create zip file with all data
-        zip_buffer = io.BytesIO()
-        
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            # Add member profiles
-            profiles_df = pd.DataFrame([asdict(p) for p in data['profiles']])
-            zip_file.writestr(f"pension_members_{timestamp}.csv", profiles_df.to_csv(index=False))
-            
-            # Add contributions if available
-            if data.get('contributions'):
-                contributions_df = pd.DataFrame([asdict(c) for c in data['contributions']])
-                zip_file.writestr(f"pension_contributions_{timestamp}.csv", contributions_df.to_csv(index=False))
-            
-            # Add allocations if available
-            if data.get('allocations'):
-                allocations_df = pd.DataFrame([asdict(a) for a in data['allocations']])
-                zip_file.writestr(f"pension_allocations_{timestamp}.csv", allocations_df.to_csv(index=False))
-            
-            # Add validation report
-            zip_file.writestr(f"validation_report_{timestamp}.json", 
-                            json.dumps(data['validation'], indent=2))
-            
-            # Add mission summary
-            mission_summary = {
-                "mission_name": "Operation Synthetic Shield - Mission Alpha",
-                "generation_timestamp": timestamp,
-                "ai_provider": st.session_state.ai_provider,
-                "total_members": len(data['profiles']),
-                "total_contributions": len(data.get('contributions', [])),
-                "total_allocations": len(data.get('allocations', [])),
-                "mission_status": "Accomplished",
-                "classification": "Synthetic Data - No Real PII"
-            }
-            zip_file.writestr(f"mission_summary_{timestamp}.json", 
-                            json.dumps(mission_summary, indent=2))
-        
-        zip_buffer.seek(0)
-        
-        st.download_button(
-            label="🎖️ Download Mission Alpha Intelligence Package",
-            data=zip_buffer.getvalue(),
-            file_name=f"mission_alpha_complete_{timestamp}.zip",
-            mime="application/zip"
-        )
 
 def main():
     """Main Streamlit application"""

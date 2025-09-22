@@ -193,7 +193,7 @@ def generate_pension_data(num_records=REQUIRED_RECORDS, output_file="generated_p
         print(f"🆔 Starting ID: MB{start_id:08d}")
         
         # For large datasets, generate in chunks to avoid Azure AI token limits
-        MAX_CHUNK_SIZE = 1000  # Azure AI works well with up to 1000 records per request
+        MAX_CHUNK_SIZE = 100  # Smaller chunks work better with Azure AI
         
         if num_records <= MAX_CHUNK_SIZE:
             # Small dataset - generate in one go

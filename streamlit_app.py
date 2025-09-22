@@ -579,10 +579,12 @@ def data_generation_interface():
                 "Number of Records", 
                 min_value=10, 
                 max_value=50000, 
-                value=5000, 
-                step=100,
-                help="Total number of pension member records to generate (optimized for large datasets)"
+                value=100, 
+                step=50,
+                help="Number of records per batch (recommended: 50-200 for reliable generation)"
             )
+            
+            st.info("💡 **Large Dataset Strategy**: For 5000+ records, generate multiple batches and use the export tool to combine them.")
             
             start_id = st.number_input(
                 "Starting Member ID", 
@@ -625,6 +627,33 @@ def data_generation_interface():
         
         # Generation button
         st.markdown("---")
+        
+        # Batch generation helper
+        st.markdown("### 🔄 Batch Generation for Large Datasets")
+        
+        batch_col1, batch_col2, batch_col3 = st.columns(3)
+        
+        with batch_col1:
+            st.markdown("**📦 Quick Batch Options**")
+            if st.button("Generate Batch 1 (ID: 1-100)", type="secondary"):
+                execute_alpha_data_generation(100, f"batch_01_{pd.Timestamp.now().strftime('%H%M%S')}.csv", 1)
+            if st.button("Generate Batch 2 (ID: 101-200)", type="secondary"):
+                execute_alpha_data_generation(100, f"batch_02_{pd.Timestamp.now().strftime('%H%M%S')}.csv", 101)
+        
+        with batch_col2:
+            if st.button("Generate Batch 3 (ID: 201-300)", type="secondary"):
+                execute_alpha_data_generation(100, f"batch_03_{pd.Timestamp.now().strftime('%H%M%S')}.csv", 201)
+            if st.button("Generate Batch 4 (ID: 301-400)", type="secondary"):
+                execute_alpha_data_generation(100, f"batch_04_{pd.Timestamp.now().strftime('%H%M%S')}.csv", 301)
+        
+        with batch_col3:
+            if st.button("Generate Batch 5 (ID: 401-500)", type="secondary"):
+                execute_alpha_data_generation(100, f"batch_05_{pd.Timestamp.now().strftime('%H%M%S')}.csv", 401)
+            
+            st.caption("💡 Generate 5 batches = 500 records total")
+        
+        st.markdown("---")
+        
         if st.button("🚀 GENERATE PENSION DATA", type="primary", width='stretch'):
             execute_alpha_data_generation(num_records, output_filename, start_id)
     
@@ -971,13 +1000,13 @@ def render_demographics_analysis(profiles_df):
                               title="Age Distribution",
                               labels={'age': 'Age', 'count': 'Number of Members'})
         fig_age.update_layout(showlegend=False)
-        st.plotly_chart(fig_age, use_container_width=True)
+        st.plotly_chart(fig_age, width='stretch')
         
         # Gender distribution
         gender_counts = profiles_df['gender'].value_counts()
         fig_gender = px.pie(values=gender_counts.values, names=gender_counts.index,
                            title="Gender Distribution")
-        st.plotly_chart(fig_gender, use_container_width=True)
+        st.plotly_chart(fig_gender, width='stretch')
     
     with col2:
         # Sector distribution
@@ -986,13 +1015,13 @@ def render_demographics_analysis(profiles_df):
                            title="Employment Sector Distribution",
                            labels={'x': 'Sector', 'y': 'Number of Members'})
         fig_sector.update_xaxes(tickangle=45)
-        st.plotly_chart(fig_sector, use_container_width=True)
+        st.plotly_chart(fig_sector, width='stretch')
         
         # Service years distribution
         fig_service = px.histogram(profiles_df, x='years_service', nbins=15,
                                   title="Years of Service Distribution",
                                   labels={'years_service': 'Years of Service', 'count': 'Number of Members'})
-        st.plotly_chart(fig_service, use_container_width=True)
+        st.plotly_chart(fig_service, width='stretch')
 
 def render_financial_analysis(profiles_df, contributions):
     """Render financial analysis charts"""
@@ -1045,20 +1074,20 @@ def render_fund_analysis(allocations):
         fig_funds = px.bar(x=fund_counts.values, y=fund_counts.index, orientation='h',
                           title="Fund Selection Frequency",
                           labels={'x': 'Number of Selections', 'y': 'Fund Name'})
-        st.plotly_chart(fig_funds, use_container_width=True)
+        st.plotly_chart(fig_funds, width='stretch')
     
     with col2:
         # Risk level distribution
         risk_counts = allocations_df['risk_level'].value_counts()
         fig_risk = px.pie(values=risk_counts.values, names=risk_counts.index,
                          title="Risk Level Distribution")
-        st.plotly_chart(fig_risk, use_container_width=True)
+        st.plotly_chart(fig_risk, width='stretch')
     
     # Allocation percentage analysis
     fig_allocation = px.histogram(allocations_df, x='allocation_percent', nbins=20,
                                  title="Fund Allocation Percentage Distribution",
                                  labels={'allocation_percent': 'Allocation Percentage', 'count': 'Frequency'})
-    st.plotly_chart(fig_allocation, use_container_width=True)
+    st.plotly_chart(fig_allocation, width='stretch')
 
 def render_quality_metrics(validation_results):
     """Render data quality metrics"""
@@ -1094,7 +1123,7 @@ def render_quality_metrics(validation_results):
             }
         ))
         fig_compliance.update_layout(height=300)
-        st.plotly_chart(fig_compliance, use_container_width=True)
+        st.plotly_chart(fig_compliance, width='stretch')
     
     with col2:
         # Age distribution quality
@@ -1176,7 +1205,7 @@ def render_realism_analysis():
                         }
                     ))
                     fig_gauge.update_layout(height=300)
-                    st.plotly_chart(fig_gauge, use_container_width=True)
+                    st.plotly_chart(fig_gauge, width='stretch')
                 
                 with col2:
                     st.metric("Overall Score", f"{overall_score:.1%}")
@@ -1211,7 +1240,7 @@ def render_realism_analysis():
                     df_comparison = pd.DataFrame(comparison_data)
                     
                     # Display comparison table
-                    st.dataframe(df_comparison, use_container_width=True)
+                    st.dataframe(df_comparison, width='stretch')
                     
                     # Create bar chart of accuracy scores
                     fig_scores = px.bar(df_comparison, x='Category', y='Accuracy Score',
@@ -1219,7 +1248,7 @@ def render_realism_analysis():
                                        color='Accuracy Score',
                                        color_continuous_scale='RdYlGn')
                     fig_scores.update_layout(showlegend=False)
-                    st.plotly_chart(fig_scores, use_container_width=True)
+                    st.plotly_chart(fig_scores, width='stretch')
                 
                 # Distribution comparisons
                 if 'age' in detailed_comparisons and 'distributions' in detailed_comparisons['age']:
@@ -1258,7 +1287,7 @@ def render_realism_analysis():
                                 height=400
                             )
                             
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, width='stretch')
                 
                 # Recommendations
                 recommendations = results.get('recommendations', [])
@@ -1350,7 +1379,7 @@ def render_realism_analysis():
                 
                 # Overall comparison chart
                 fig_overview = comparator.create_comparison_visualizations()
-                st.plotly_chart(fig_overview, use_container_width=True)
+                st.plotly_chart(fig_overview, width='stretch')
                 
             with tab2:
                 st.markdown("### 📈 Detailed Category Metrics")
@@ -1390,13 +1419,13 @@ def render_realism_analysis():
                 if "age" in detailed_comparisons:
                     st.markdown("#### 👥 Age Distribution")
                     age_fig = comparator.create_age_comparison_chart()
-                    st.plotly_chart(age_fig, use_container_width=True)
+                    st.plotly_chart(age_fig, width='stretch')
                 
                 # Salary analysis
                 if "salary" in detailed_comparisons:
                     st.markdown("#### 💰 Salary Analysis")
                     salary_fig = comparator.create_salary_comparison_chart()
-                    st.plotly_chart(salary_fig, use_container_width=True)
+                    st.plotly_chart(salary_fig, width='stretch')
                 
                 # Gender distribution
                 if "gender" in detailed_comparisons:
@@ -1412,7 +1441,7 @@ def render_realism_analysis():
                         go.Bar(name='Real UK', x=categories, y=real_values, marker_color='darkred')
                     ])
                     fig.update_layout(title="Gender Distribution Comparison", barmode='group', height=400)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
             
             with tab4:
                 st.markdown("### 📊 Enhanced Histogram Analysis")
@@ -1428,7 +1457,7 @@ def render_realism_analysis():
                     st.markdown("#### Age Distribution Analysis")
                     try:
                         age_hist = comparator.create_age_histogram()
-                        st.plotly_chart(age_hist, use_container_width=True)
+                        st.plotly_chart(age_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate age histogram: {str(e)}")
                 
@@ -1436,7 +1465,7 @@ def render_realism_analysis():
                     st.markdown("#### Salary Distribution Analysis")
                     try:
                         salary_hist = comparator.create_salary_histogram()
-                        st.plotly_chart(salary_hist, use_container_width=True)
+                        st.plotly_chart(salary_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate salary histogram: {str(e)}")
                 
@@ -1444,7 +1473,7 @@ def render_realism_analysis():
                     st.markdown("#### Years of Service Analysis")
                     try:
                         service_hist = comparator.create_service_histogram()
-                        st.plotly_chart(service_hist, use_container_width=True)
+                        st.plotly_chart(service_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate service histogram: {str(e)}")
                 
@@ -1452,7 +1481,7 @@ def render_realism_analysis():
                     st.markdown("#### Geographic Distribution Analysis")
                     try:
                         geo_hist = comparator.create_geographic_histogram()
-                        st.plotly_chart(geo_hist, use_container_width=True)
+                        st.plotly_chart(geo_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate geographic histogram: {str(e)}")
                 
@@ -1460,7 +1489,7 @@ def render_realism_analysis():
                     st.markdown("#### Category Accuracy Scores")
                     try:
                         accuracy_hist = comparator.create_accuracy_scores_histogram()
-                        st.plotly_chart(accuracy_hist, use_container_width=True)
+                        st.plotly_chart(accuracy_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate accuracy histogram: {str(e)}")
                 
@@ -1468,7 +1497,7 @@ def render_realism_analysis():
                     st.markdown("#### Comprehensive Error Analysis")
                     try:
                         error_hist = comparator.create_error_analysis_histogram()
-                        st.plotly_chart(error_hist, use_container_width=True)
+                        st.plotly_chart(error_hist, width='stretch')
                     except Exception as e:
                         st.warning(f"Could not generate error analysis histogram: {str(e)}")
             
@@ -1548,7 +1577,7 @@ Category Breakdown:
         }
         
         example_df = pd.DataFrame(example_data)
-        st.dataframe(example_df, use_container_width=True)
+        st.dataframe(example_df, width='stretch')
 
 def analyze_data_realism(file_path: str):
     """Perform comprehensive realism analysis on selected data file"""
@@ -1596,7 +1625,7 @@ def display_realism_results():
         if comparator:
             figures = comparator.create_comparison_visualizations()
             if 'realism_gauge' in figures:
-                st.plotly_chart(figures['realism_gauge'], use_container_width=True)
+                st.plotly_chart(figures['realism_gauge'], width='stretch')
     
     # Score interpretation
     if overall_score >= 0.8:
@@ -1686,9 +1715,9 @@ def render_category_analysis(category: str, category_data: dict, comparator):
             chart_key = f"{category}_comparison"
             
             if chart_key in figures:
-                st.plotly_chart(figures[chart_key], use_container_width=True)
+                st.plotly_chart(figures[chart_key], width='stretch')
             elif category == 'salary' and 'salary_comparison' in figures:
-                st.plotly_chart(figures['salary_comparison'], use_container_width=True)
+                st.plotly_chart(figures['salary_comparison'], width='stretch')
     
     # Detailed distributions
     if 'distributions' in category_data:
@@ -1706,7 +1735,7 @@ def render_category_analysis(category: str, category_data: dict, comparator):
             for cat, data in distributions.items()
         ])
         
-        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+        st.dataframe(comparison_df, width='stretch', hide_index=True)
 
 def export_realism_report(results: dict):
     """Export comprehensive realism analysis report"""
@@ -1838,14 +1867,50 @@ def data_export_interface():
                     )
                 
                 with col3:
-                    # Download filtered data (e.g., specific age brackets)
-                    if st.button(f"🎯 Filter & Download", key=f"filter_{file}"):
+                    # Privacy and download options
+                    anonymize_postcodes = st.checkbox(
+                        "🔒 Anonymize Postcodes", 
+                        value=True,
+                        key=f"anon_{file}",
+                        help="Replace postcode second half with XXX for privacy"
+                    )
+                    
+                    if st.button(f"📥 Download (Privacy-Safe)", key=f"privacy_{file}"):
+                        df_download = df.copy()
+                        
+                        if anonymize_postcodes and 'Postcode' in df_download.columns:
+                            # Anonymize postcodes
+                            def anonymize_postcode(postcode):
+                                if pd.isna(postcode) or not isinstance(postcode, str):
+                                    return postcode
+                                import re
+                                match = re.match(r'^([A-Z]{1,2}[0-9]{1,2}[A-Z]?)\s+([0-9][A-Z]{2})$', postcode.upper().strip())
+                                if match:
+                                    return f"{match.group(1)} XXX"
+                                else:
+                                    parts = postcode.strip().split()
+                                    return f"{parts[0]} XXX" if len(parts) >= 1 else postcode
+                            
+                            df_download['Postcode'] = df_download['Postcode'].apply(anonymize_postcode)
+                        
+                        privacy_csv = df_download.to_csv(index=False)
+                        privacy_filename = f"{file.replace('.csv', '')}_privacy_safe.csv"
+                        
+                        st.download_button(
+                            label=f"💾 Download {privacy_filename}",
+                            data=privacy_csv,
+                            file_name=privacy_filename,
+                            mime="text/csv"
+                        )
+                    
+                    # Show advanced filtering options
+                    if st.button(f"🎯 Advanced Filters", key=f"filter_{file}"):
                         st.session_state[f"show_filter_{file}"] = True
                 
                 # Show filtering options if requested
                 if st.session_state.get(f"show_filter_{file}", False):
-                    st.markdown("**Filter Options:**")
-                    filter_col1, filter_col2 = st.columns(2)
+                    st.markdown("**Advanced Filter Options:**")
+                    filter_col1, filter_col2, filter_col3 = st.columns(3)
                     
                     with filter_col1:
                         if 'Age' in df.columns:
@@ -1866,6 +1931,13 @@ def data_export_interface():
                                 key=f"sector_filter_{file}"
                             )
                     
+                    with filter_col3:
+                        filter_anonymize = st.checkbox(
+                            "🔒 Anonymize in Export", 
+                            value=True,
+                            key=f"filter_anon_{file}"
+                        )
+                    
                     if st.button(f"📥 Download Filtered Data", key=f"download_filtered_{file}"):
                         filtered_df = df.copy()
                         
@@ -1881,8 +1953,25 @@ def data_export_interface():
                         if 'Sector' in df.columns and selected_sectors:
                             filtered_df = filtered_df[filtered_df['Sector'].isin(selected_sectors)]
                         
+                        # Apply anonymization if requested
+                        if filter_anonymize and 'Postcode' in filtered_df.columns:
+                            def anonymize_postcode(postcode):
+                                if pd.isna(postcode) or not isinstance(postcode, str):
+                                    return postcode
+                                import re
+                                match = re.match(r'^([A-Z]{1,2}[0-9]{1,2}[A-Z]?)\s+([0-9][A-Z]{2})$', postcode.upper().strip())
+                                if match:
+                                    return f"{match.group(1)} XXX"
+                                else:
+                                    parts = postcode.strip().split()
+                                    return f"{parts[0]} XXX" if len(parts) >= 1 else postcode
+                            
+                            filtered_df['Postcode'] = filtered_df['Postcode'].apply(anonymize_postcode)
+                        
                         filtered_csv = filtered_df.to_csv(index=False)
-                        filtered_filename = f"{file.replace('.csv', '')}_filtered_{timestamp}.csv"
+                        timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                        privacy_suffix = "_private" if filter_anonymize else ""
+                        filtered_filename = f"{file.replace('.csv', '')}_filtered{privacy_suffix}_{timestamp}.csv"
                         
                         st.download_button(
                             label=f"💾 Download {filtered_filename}",
@@ -1899,6 +1988,73 @@ def data_export_interface():
     # Batch export options
     if len(generated_files) > 1:
         st.markdown("### 📦 Batch Export Options")
+        
+        # Smart combining for large datasets
+        st.markdown("#### 🔗 Smart Dataset Combiner")
+        st.info("💡 Combine multiple batch files into a single large dataset")
+        
+        combine_col1, combine_col2 = st.columns(2)
+        
+        with combine_col1:
+            selected_files = st.multiselect(
+                "Select files to combine",
+                options=generated_files,
+                default=generated_files,
+                help="Choose which CSV files to merge into one dataset"
+            )
+        
+        with combine_col2:
+            target_records = st.number_input(
+                "Target Record Count",
+                min_value=100,
+                max_value=10000,
+                value=5000,
+                step=100,
+                help="How many records you want in the final dataset"
+            )
+        
+        if selected_files and st.button("🔗 Combine Selected Files", type="primary"):
+            try:
+                combined_dfs = []
+                current_count = 0
+                
+                for file in selected_files:
+                    if current_count >= target_records:
+                        break
+                        
+                    df = pd.read_csv(file)
+                    needed = min(len(df), target_records - current_count)
+                    combined_dfs.append(df.head(needed))
+                    current_count += needed
+                
+                if combined_dfs:
+                    final_df = pd.concat(combined_dfs, ignore_index=True)
+                    
+                    # Fix Member IDs to be sequential
+                    for i in range(len(final_df)):
+                        final_df.iloc[i, 0] = f"MB{i+1:08d}"  # Assuming MemberID is first column
+                    
+                    timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"combined_dataset_{len(final_df)}_records_{timestamp}.csv"
+                    final_csv = final_df.to_csv(index=False)
+                    
+                    st.download_button(
+                        label=f"📥 Download Combined Dataset ({len(final_df)} records)",
+                        data=final_csv,
+                        file_name=filename,
+                        mime="text/csv"
+                    )
+                    
+                    st.success(f"✅ Combined {len(combined_dfs)} files into {len(final_df)} records!")
+                    
+                    # Show preview
+                    st.markdown("**Combined Dataset Preview:**")
+                    st.dataframe(final_df.head(10))
+            
+            except Exception as e:
+                st.error(f"❌ Error combining files: {str(e)}")
+        
+        st.markdown("---")
         
         if st.button("�️ Download All Files as ZIP"):
             import zipfile

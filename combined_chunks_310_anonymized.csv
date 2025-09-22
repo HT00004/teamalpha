@@ -1,0 +1,311 @@
+MemberID,Age,Gender,Postcode,Sector,JobGrade,AnnualSalary,YearsService,Status
+MB00000001,22.0,M,EC1A XXX,Finance,Analyst,51000.0,1.0,Active
+MB00000002,23.0,F,EC1A XXX,Manufacturing,Technician,31000.0,2.0,Active
+MB00000003,24.0,M,EC1A XXX,Public Service,Grade 7,33000.0,3.0,Active
+MB00000004,25.0,F,EC1A XXX,Healthcare,Band 5,36000.0,4.0,Active
+MB00000005,26.0,M,EC1A XXX,Education,Teacher,32000.0,5.0,Active
+MB00000006,27.0,F,EC1A XXX,Retail,Sales Assistant,25000.0,6.0,Active
+MB00000007,28.0,M,M1 XXX,Finance,Senior Analyst,48000.0,7.0,Active
+MB00000008,29.0,F,M1 XXX,Manufacturing,Senior Technician,34000.0,8.0,Active
+MB00000009,30.0,M,M1 XXX,Public Service,Grade 6,37000.0,9.0,Active
+MB00000010,31.0,F,M1 XXX,Healthcare,Band 6,40000.0,10.0,Active
+MB00000011,32.0,M,M1 XXX,Education,Senior Teacher,39000.0,11.0,Active
+MB00000012,33.0,F,M1 XXX,Retail,Supervisor,27000.0,12.0,Active
+MB00000013,34.0,F,M1 XXX,Other,Associate,42000.0,13.0,Active
+MB00000014,35.0,M,M1 XXX,Other,Consultant,43000.0,14.0,Active
+MB00000015,36.0,F,M1 XXX,Other,Senior Consultant,44000.0,15.0,Active
+MB00000016,37.0,M,M2 XXX,Finance,Associate,55000.0,16.0,Active
+MB00000017,38.0,F,M2 XXX,Finance,Manager,64000.0,17.0,Active
+MB00000018,39.0,M,M2 XXX,Finance,Senior Manager,77000.0,18.0,Active
+MB00000019,40.0,F,M2 XXX,Finance,Director,95000.0,19.0,Active
+MB00000020,41.0,M,M2 XXX,Manufacturing,Production Manager,68000.0,20.0,Active
+MB00000021,42.0,F,M2 XXX,Manufacturing,Supervisor,72000.0,21.0,Active
+MB00000022,43.0,M,M2 XXX,Public Service,Principal Officer,75000.0,22.0,Active
+MB00000023,44.0,F,M2 XXX,Healthcare,Senior Practitioner,81000.0,23.0,Active
+MB00000024,45.0,M,M2 XXX,Healthcare,Band 7,67000.0,24.0,Active
+MB00000025,46.0,F,M2 XXX,Education,Head of Department,62000.0,25.0,Active
+MB00000026,47.0,M,M2 XXX,Retail,Store Manager,52000.0,26.0,Active
+MB00000027,48.0,F,M2 XXX,Retail,Area Manager,55000.0,27.0,Active
+MB00000028,49.0,M,M2 XXX,Other,Manager,60000.0,28.0,Active
+MB00000029,50.0,F,M2 XXX,Other,Manager,65000.0,29.0,Active
+MB00000030,51.0,M,M2 XXX,Finance,Director,105000.0,30.0,Active
+MB00000031,52.0,F,M2 XXX,Finance,Senior Manager,117000.0,31.0,Active
+MB00000032,53.0,M,M2 XXX,Finance,Manager,90000.0,32.0,Active
+MB00000033,54.0,O,M3 XXX,Finance,Associate,58000.0,33.0,Active
+MB00000034,55.0,M,M3 XXX,Manufacturing,Technician,38000.0,34.0,Pensioner
+MB00000035,56.0,F,M3 XXX,Public Service,Grade 7,42000.0,35.0,Pensioner
+MB00000036,57.0,M,M3 XXX,Healthcare,Band 5,44000.0,36.0,Pensioner
+MB00000037,58.0,F,M3 XXX,Education,Teacher,46000.0,37.0,Deferred
+MB00000038,59.0,M,M3 XXX,Retail,Sales Assistant,33000.0,38.0,Pensioner
+MB00000039,60.0,F,M3 XXX,Other,Associate,48000.0,39.0,Deferred
+MB00000040,61.0,M,M3 XXX,Other,Consultant,50000.0,40.0,Pensioner
+MB00000041,62.0,F,M3 XXX,Other,Senior Consultant,52000.0,41.0,Deferred
+MB00000042,63.0,M,B1 XXX,Finance,Analyst,27000.0,42.0,Pensioner
+MB00000043,64.0,F,B1 XXX,Manufacturing,Technician,32000.0,43.0,Pensioner
+MB00000044,65.0,M,B1 XXX,Public Service,Grade 7,35000.0,44.0,Pensioner
+MB00000045,66.0,F,B1 XXX,Healthcare,Band 5,38000.0,45.0,Pensioner
+MB00000046,67.0,F,B1 XXX,Education,Teacher,31000.0,46.0,Pensioner
+MB00000047,68.0,M,B1 XXX,Retail,Sales Assistant,29000.0,47.0,Pensioner
+MB00000048,69.0,F,B1 XXX,Other,Associate,35000.0,48.0,Pensioner
+MB00000049,70.0,M,B1 XXX,Other,Consultant,36000.0,49.0,Pensioner
+MB00000050,71.0,F,B1 XXX,Other,Senior Consultant,37000.0,50.0,Pensioner
+...,,,,,,,,
+MB0000971,22.0,M,E1 XXX,Finance,Analyst,51000.0,1.0,Active
+MB0000972,23.0,F,E1 XXX,Manufacturing,Technician,31000.0,2.0,Active
+MB0000973,24.0,M,E1 XXX,Public Service,Grade 7,33000.0,3.0,Active
+MB0000974,25.0,F,E1 XXX,Healthcare,Band 5,36000.0,4.0,Active
+MB0000975,26.0,M,E1 XXX,Education,Teacher,32000.0,5.0,Active
+MB0000976,27.0,F,E1 XXX,Retail,Sales Assistant,25000.0,6.0,Active
+MB0000977,28.0,M,E1 XXX,Finance,Senior Analyst,48000.0,7.0,Active
+MB0000978,29.0,F,E1 XXX,Manufacturing,Senior Technician,34000.0,8.0,Active
+MB0000979,30.0,M,E1 XXX,Public Service,Grade 6,37000.0,9.0,Active
+MB0000980,31.0,F,E1 XXX,Healthcare,Band 6,40000.0,10.0,Active
+MB0000981,32.0,M,E1 XXX,Education,Senior Teacher,39000.0,11.0,Active
+MB0000982,33.0,F,E1 XXX,Retail,Supervisor,27000.0,12.0,Active
+MB0000983,34.0,F,E1 XXX,Other,Associate,42000.0,13.0,Active
+MB0000984,35.0,M,E1 XXX,Other,Consultant,43000.0,14.0,Active
+MB0000985,36.0,F,E1 XXX,Other,Senior Consultant,44000.0,15.0,Active
+MB0000986,37.0,M,E1 XXX,Finance,Associate,55000.0,16.0,Active
+MB0000987,38.0,F,E1 XXX,Finance,Manager,64000.0,17.0,Active
+MB0000988,39.0,M,E1 XXX,Finance,Senior Manager,77000.0,18.0,Active
+MB0000989,40.0,F,E1 XXX,Finance,Director,95000.0,19.0,Active
+MB0000990,41.0,M,E1 XXX,Manufacturing,Production Manager,68000.0,20.0,Active
+MB0000991,42.0,F,E1 XXX,Manufacturing,Supervisor,72000.0,21.0,Active
+MB0000992,43.0,M,E1 XXX,Public Service,Principal Officer,75000.0,22.0,Active
+MB0000993,44.0,F,E1 XXX,Healthcare,Senior Practitioner,81000.0,23.0,Active
+MB0000994,45.0,M,E1 XXX,Healthcare,Band 7,67000.0,24.0,Active
+MB0000995,46.0,F,E1 XXX,Education,Head of Department,62000.0,25.0,Active
+MB0000996,47.0,M,E1 XXX,Retail,Store Manager,52000.0,26.0,Active
+MB0000997,48.0,F,E1 XXX,Retail,Area Manager,55000.0,27.0,Active
+MB0000998,49.0,M,E1 XXX,Other,Manager,60000.0,28.0,Active
+MB0000999,50.0,F,E1 XXX,Other,Manager,65000.0,29.0,Active
+MB0001000,51.0,M,E1 XXX,Finance,Director,105000.0,30.0,Active
+MB00001001,24.0,M,SW1A XXX,Finance,Analyst,36000.0,3.0,Active
+MB00001002,25.0,F,EC1A XXX,Finance,Senior Analyst,51000.0,4.0,Active
+MB00001003,26.0,M,M1 XXX,Finance,Associate,45000.0,5.0,Active
+MB00001004,22.0,F,CF10 XXX,Finance,Manager,61000.0,1.0,Active
+MB00001005,23.0,F,M2 XXX,Finance,Senior Manager,95000.0,2.0,Active
+MB00001006,27.0,M,L1 XXX,Finance,Director,120000.0,6.0,Active
+MB00001007,32.0,O,EH1 XXX,Finance,Analyst,36500.0,11.0,Active
+MB00001008,35.0,M,BS1 XXX,Manufacturing,Technician,28000.0,10.0,Deferred
+MB00001009,34.0,F,LS1 XXX,Manufacturing,Senior Technician,35500.0,9.0,Deferred
+MB00001010,30.0,M,E1 XXX,Manufacturing,Supervisor,37500.0,7.0,Deferred
+MB00001011,33.0,F,B3 XXX,Manufacturing,Production Manager,75000.0,12.0,Deferred
+MB00001012,29.0,M,B2 XXX,Manufacturing,Technician,30000.0,8.0,Active
+MB00001013,31.0,F,N1 XXX,Healthcare,Band 5,40000.0,10.0,Pensioner
+MB00001014,28.0,M,G1 XXX,Healthcare,Band 6,45000.0,7.0,Active
+MB00001015,32.0,F,G2 XXX,Healthcare,Band 7,55000.0,11.0,Active
+MB00001016,28.0,M,EH2 XXX,Healthcare,Senior Practitioner,75000.0,7.0,Active
+MB00001017,40.0,F,CF11 XXX,Public Service,Grade 7,42000.0,19.0,Active
+MB00001018,42.0,M,M3 XXX,Public Service,Grade 6,52000.0,21.0,Active
+MB00001019,39.0,F,L2 XXX,Public Service,Senior Officer,45000.0,18.0,Active
+MB00001020,37.0,M,E1 XXX,Public Service,Principal Officer,62000.0,16.0,Active
+MB00001021,45.0,F,LS2 XXX,Education,Teacher,32000.0,24.0,Deferred
+MB00001022,44.0,F,SW1A XXX,Education,Senior Teacher,43500.0,23.0,Deferred
+MB00001023,47.0,F,EC1A XXX,Education,Head of Department,65000.0,26.0,Pensioner
+MB00001024,41.0,M,B3 XXX,Education,Deputy Head,57500.0,20.0,Active
+MB00001025,46.0,F,BS2 XXX,Retail,Sales Assistant,25000.0,25.0,Active
+MB00001026,48.0,F,CF10 XXX,Retail,Supervisor,30000.0,27.0,Pensioner
+MB00001027,50.0,M,G1 XXX,Retail,Store Manager,50000.0,29.0,Deferred
+MB00001028,49.0,F,N1 XXX,Retail,Area Manager,55000.0,28.0,Deferred
+MB00001029,54.0,M,M1 XXX,Other,Associate,35000.0,33.0,Active
+MB00001030,56.0,F,CF11 XXX,Other,Consultant,47000.0,35.0,Pensioner
+MB00001031,52.0,M,EH2 XXX,Other,Senior Consultant,62000.0,31.0,Deferred
+MB00001032,53.0,F,L1 XXX,Other,Manager,90000.0,32.0,Deferred
+MB00001033,65.0,M,E1 XXX,Other,Associate,45000.0,44.0,Pensioner
+MB00001034,64.0,F,B1 XXX,Other,Consultant,52000.0,43.0,Deferred
+MB00001035,66.0,F,SW1A XXX,Other,Senior Consultant,70000.0,45.0,Pensioner
+MB00001036,70.0,M,EC1A XXX,Other,Manager,85000.0,49.0,Pensioner
+MB00001037,72.0,F,G2 XXX,Other,Associate,40000.0,51.0,Pensioner
+MB00001038,75.0,F,B2 XXX,Other,Consultant,49000.0,54.0,Pensioner
+MB00001039,74.0,M,M2 XXX,Other,Senior Consultant,75000.0,53.0,Pensioner
+MB00001040,73.0,F,L2 XXX,Other,Manager,88000.0,52.0,Pensioner
+MB00001041,55.0,M,E1 XXX,Other,Associate,50000.0,34.0,Active
+MB00001042,57.0,F,LE2 XXX,Other,Consultant,60000.0,36.0,Pensioner
+MB00001043,67.0,F,SH1 XXX,Other,Senior Consultant,82000.0,46.0,Pensioner
+MB00001044,60.0,M,G1 XXX,Other,Manager,90000.0,39.0,Pensioner
+MB00001045,68.0,F,EZ1 XXX,Other,Associate,47000.0,47.0,Pensioner
+MB00001046,62.0,M,B3 XXX,Other,Consultant,58000.0,41.0,Pensioner
+MB00001047,64.0,M,SW1A XXX,Other,Senior Consultant,75000.0,43.0,Pensioner
+MB00001048,71.0,F,BS2 XXX,Other,Manager,85000.0,50.0,Pensioner
+MB00001049,69.0,M,CF11 XXX,Other,Associate,45000.0,48.0,Pensioner
+MB00001050,63.0,F,CF10 XXX,Other,Consultant,52000.0,42.0,Pensioner
+MB00001051,70.0,F,E1 XXX,Other,Senior Consultant,70000.0,49.0,Pensioner
+MB00001052,72.0,M,L1 XXX,Other,Manager,88000.0,51.0,Pensioner
+MB00001053,74.0,F,LS1 XXX,Other,Associate,40000.0,53.0,Pensioner
+MB00001054,65.0,M,E1 XXX,Other,Consultant,49000.0,44.0,Pensioner
+MB00001055,73.0,F,B2 XXX,Other,Senior Consultant,75000.0,52.0,Pensioner
+MB00001056,67.0,M,B1 XXX,Other,Manager,85000.0,46.0,Pensioner
+MB00001057,72.0,F,G2 XXX,Other,Associate,47000.0,51.0,Pensioner
+MB00001058,69.0,F,M1 XXX,Other,Consultant,58000.0,48.0,Pensioner
+MB00001059,63.0,F,M3 XXX,Other,Senior Consultant,75000.0,42.0,Pensioner
+MB00001060,71.0,M,L2 XXX,Other,Manager,85000.0,50.0,Pensioner
+MB00001061,68.0,F,LS2 XXX,Other,Associate,45000.0,47.0,Pensioner
+MB00001062,62.0,F,N1 XXX,Other,Consultant,52000.0,41.0,Pensioner
+MB00001063,70.0,F,E1 XXX,Other,Senior Consultant,70000.0,49.0,Pensioner
+MB00001064,74.0,M,L1 XXX,Other,Manager,88000.0,53.0,Pensioner
+MB00001065,73.0,F,EC1A XXX,Other,Associate,40000.0,52.0,Pensioner
+MB00001066,75.0,F,SW1A XXX,Other,Consultant,49000.0,54.0,Pensioner
+MB00001067,67.0,M,B2 XXX,Other,Senior Consultant,75000.0,46.0,Pensioner
+MB00001068,69.0,F,B3 XXX,Other,Manager,85000.0,48.0,Pensioner
+MB00001069,72.0,F,B1 XXX,Other,Associate,47000.0,51.0,Pensioner
+MB00001070,64.0,M,BS2 XXX,Other,Consultant,58000.0,43.0,Pensioner
+MB00002001,24.0,F,EC1A XXX,Finance,Analyst,42000.0,3.0,Active
+MB00002002,30.0,M,M2 XXX,Manufacturing,Technician,29000.0,9.0,Deferred
+MB00002003,52.0,F,B1 XXX,Public Service,Grade 6,38000.0,20.0,Active
+MB00002004,67.0,F,G1 XXX,Healthcare,Band 7,54000.0,25.0,Pensioner
+MB00002005,36.0,M,CF10 XXX,Education,Senior Teacher,34000.0,15.0,Active
+MB00002006,49.0,O,L1 XXX,Retail,Sales Assistant,30000.0,5.0,Deferred
+MB00002007,40.0,M,LS1 XXX,Other,Manager,60000.0,19.0,Active
+MB00002008,55.0,F,SW1A XXX,Finance,Director,100000.0,30.0,Pensioner
+MB00002009,27.0,F,E1 XXX,Manufacturing,Senior Technician,32000.0,1.0,Active
+MB00002010,62.0,M,B3 XXX,Public Service,Principal Officer,76000.0,35.0,Pensioner
+MB00002011,41.0,F,EH1 XXX,Healthcare,Senior Practitioner,49000.0,20.0,Deferred
+MB00002012,50.0,M,W1A XXX,Education,Deputy Head,52000.0,28.0,Active
+MB00002013,34.0,O,N1 XXX,Retail,Supervisor,25000.0,6.0,Active
+MB00002014,29.0,F,M3 XXX,Other,Consultant,55000.0,8.0,Deferred
+MB00002015,43.0,M,EC1A XXX,Finance,Manager,60000.0,21.0,Active
+MB00002016,71.0,F,G2 XXX,Manufacturing,Production Manager,45000.0,40.0,Pensioner
+MB00002017,47.0,O,CF11 XXX,Public Service,Senior Officer,41000.0,26.0,Active
+MB00002018,55.0,M,L2 XXX,Healthcare,Band 6,40000.0,34.0,Pensioner
+MB00002019,33.0,F,EH2 XXX,Education,Teacher,39000.0,9.0,Active
+MB00002020,38.0,M,M1 XXX,Retail,Store Manager,30000.0,17.0,Deferred
+MB00002021,45.0,F,W1A XXX,Other,Associate,50000.0,24.0,Active
+MB00002022,23.0,O,B2 XXX,Finance,Associate,35000.0,2.0,Active
+MB00002023,54.0,F,LS2 XXX,Manufacturing,Supervisor,35000.0,33.0,Pensioner
+MB00002024,65.0,M,BS1 XXX,Public Service,Grade 7,28000.0,44.0,Pensioner
+MB00002025,39.0,F,EC1A XXX,Healthcare,Band 5,29000.0,15.0,Deferred
+MB00002026,42.0,M,BS2 XXX,Education,Head of Department,58000.0,21.0,Active
+MB00002027,28.0,F,N1 XXX,Retail,Area Manager,33000.0,7.0,Active
+MB00002028,60.0,F,E1 XXX,Other,Senior Consultant,81000.0,38.0,Pensioner
+MB00002029,53.0,M,EH1 XXX,Finance,Senior Manager,76000.0,32.0,Active
+MB00002030,74.0,F,M2 XXX,Manufacturing,Technician,19000.0,50.0,Pensioner
+MB00002031,35.0,O,SW1A XXX,Public Service,Grade 6,40000.0,14.0,Active
+MB00002032,44.0,M,L1 XXX,Healthcare,Senior Practitioner,45000.0,23.0,Deferred
+MB00002033,26.0,F,G2 XXX,Education,Senior Teacher,36000.0,5.0,Active
+MB00002034,51.0,F,CF10 XXX,Retail,Sales Assistant,21000.0,30.0,Active
+MB00002035,58.0,M,B1 XXX,Other,Consultant,70000.0,37.0,Pensioner
+MB00002036,23.0,F,M3 XXX,Finance,Analyst,35000.0,2.0,Active
+MB00002037,66.0,M,LS1 XXX,Manufacturing,Production Manager,60000.0,45.0,Pensioner
+MB00002038,49.0,O,B3 XXX,Public Service,Senior Officer,52000.0,28.0,Deferred
+MB00002039,61.0,F,G1 XXX,Healthcare,Band 6,32000.0,40.0,Pensioner
+MB00002040,32.0,M,EH2 XXX,Education,Deputy Head,56000.0,11.0,Active
+MB00002041,39.0,F,CF11 XXX,Retail,Supervisor,24000.0,17.0,Active
+MB00002042,25.0,O,L2 XXX,Other,Manager,47000.0,4.0,Deferred
+MB00002043,52.0,F,W1A XXX,Finance,Director,110000.0,31.0,Pensioner
+MB00002044,54.0,M,N1 XXX,Manufacturing,Senior Technician,35000.0,33.0,Pensioner
+MB00002045,70.0,F,G2 XXX,Public Service,Principal Officer,79000.0,49.0,Pensioner
+MB00002046,38.0,F,BS1 XXX,Healthcare,Senior Practitioner,45000.0,16.0,Deferred
+MB00002047,46.0,M,EC1A XXX,Education,Teacher,32000.0,25.0,Active
+MB00002048,21.0,O,E1 XXX,Retail,Store Manager,33000.0,1.0,Active
+MB00002049,37.0,F,BS2 XXX,Other,Associate,48000.0,15.0,Active
+MB00002050,64.0,M,CF10 XXX,Finance,Manager,62000.0,43.0,Pensioner
+MB00002051,24.0,F,EH1 XXX,Manufacturing,Technician,20500.0,3.0,Deferred
+MB00002052,34.0,M,B2 XXX,Public Service,Grade 7,39000.0,13.0,Active
+MB00002053,27.0,F,M1 XXX,Healthcare,Band 5,26000.0,6.0,Active
+MB00002054,59.0,M,W1A XXX,Education,Senior Teacher,52000.0,36.0,Deferred
+MB00002055,47.0,F,B3 XXX,Retail,Area Manager,26000.0,26.0,Active
+MB00002056,29.0,F,L1 XXX,Other,Associate,52000.0,8.0,Active
+MB00002057,73.0,M,EC1A XXX,Finance,Analyst,95000.0,52.0,Pensioner
+MB00002058,68.0,F,LS2 XXX,Manufacturing,Production Manager,65000.0,47.0,Pensioner
+MB00002059,28.0,M,SW1A XXX,Public Service,Senior Officer,30000.0,7.0,Active
+MB00002060,56.0,O,M2 XXX,Healthcare,Band 7,65000.0,35.0,Pensioner
+MB00002061,22.0,F,E1 XXX,Education,Deputy Head,35000.0,1.0,Active
+MB00002062,55.0,M,EH2 XXX,Retail,Supervisor,23000.0,34.0,Deferred
+MB00002063,48.0,F,N1 XXX,Other,Senior Consultant,74000.0,27.0,Active
+MB00002064,33.0,F,M3 XXX,Finance,Manager,66000.0,12.0,Active
+MB00002065,41.0,M,L2 XXX,Manufacturing,Senior Technician,33000.0,20.0,Deferred
+MB00002066,36.0,O,G1 XXX,Public Service,Grade 6,42000.0,15.0,Active
+MB00002067,54.0,F,B2 XXX,Healthcare,Band 6,47000.0,33.0,Pensioner
+MB00002068,59.0,F,CF11 XXX,Education,Teacher,33000.0,38.0,Deferred
+MB00002069,71.0,M,BS1 XXX,Retail,Sales Assistant,35000.0,50.0,Pensioner
+MB00002070,65.0,F,C1A XXX,Other,Manager,65000.0,44.0,Pensioner
+MB00002071,30.0,M,M1 XXX,Finance,Senior Analyst,55000.0,9.0,Active
+MB00002072,42.0,F,EC1A XXX,Manufacturing,Technician,21000.0,21.0,Active
+MB00002073,29.0,F,G2 XXX,Public Service,Grade 7,41000.0,8.0,Deferred
+MB00002074,23.0,O,LS1 XXX,Healthcare,Senior Practitioner,46000.0,2.0,Active
+MB00002075,26.0,F,B1 XXX,Education,Senior Teacher,34000.0,5.0,Active
+MB00002076,51.0,M,L2 XXX,Retail,Store Manager,34000.0,30.0,Pensioner
+MB00002077,23.0,F,W1A XXX,Other,Associate,54000.0,2.0,Active
+MB00002078,62.0,M,M3 XXX,Finance,Director,115000.0,41.0,Pensioner
+MB00002079,31.0,F,EH1 XXX,Manufacturing,Production Manager,40000.0,10.0,Deferred
+MB00002080,39.0,M,E1 XXX,Public Service,Principal Officer,75000.0,18.0,Active
+MB00002081,58.0,F,G1 XXX,Healthcare,Band 7,48000.0,37.0,Pensioner
+MB00002082,49.0,O,CF10 XXX,Education,Head of Department,59000.0,28.0,Deferred
+MB00002083,22.0,F,BS2 XXX,Retail,Area Manager,31000.0,1.0,Active
+MB00002084,34.0,M,B3 XXX,Other,Consultant,67000.0,13.0,Deferred
+MB00002085,46.0,F,EH2 XXX,Finance,Manager,62000.0,25.0,Active
+MB00002086,70.0,F,EC1A XXX,Manufacturing,Supervisor,33000.0,49.0,Pensioner
+MB00002087,43.0,O,SW1A XXX,Public Service,Senior Officer,55000.0,22.0,Active
+MB00002088,62.0,F,M2 XXX,Healthcare,Band 6,41000.0,40.0,Pensioner
+MB00002089,54.0,M,L1 XXX,Education,Deputy Head,53000.0,33.0,Deferred
+MB00002090,40.0,F,N1 XXX,Retail,Supervisor,25000.0,19.0,Active
+MB00002091,35.0,M,LS2 XXX,Other,Manager,76000.0,14.0,Active
+MB00002092,22.0,F,EH1 XXX,Finance,Analist,36000.0,1.0,Active
+MB00002093,33.0,M,B1 XXX,Manufacturing,Technician,22000.0,12.0,Deferred
+MB00002094,26.0,F,BS1 XXX,Public Service,Senior Officer,42000.0,5.0,Active
+MB00002095,55.0,F,G2 XXX,Healthcare,Senior Practitioner,47000.0,34.0,Pensioner
+MB00002096,47.0,O,M3 XXX,Education,Teacher,34000.0,26.0,Active
+MB00002097,64.0,M,B3 XXX,Retail,Sales Assistant,37000.0,43.0,Pensioner
+MB00002098,28.0,F,EC1A XXX,Other,Associate,49000.0,7.0,Active
+MB00002099,37.0,O,EH2 XXX,Finance,Senior Manager,70000.0,16.0,Deferred
+MB00002100,52.0,F,E1 XXX,Manufacturing,Senior Technician,36000.0,31.0,Pensioner
+MB00002101,68.0,M,CF11 XXX,Public Service,Principal Officer,78000.0,47.0,Pensioner
+MB00002102,48.0,F,BS2 XXX,Healthcare,Band 7,52000.0,27.0,Deferred
+MB00002103,40.0,M,G1 XXX,Education,Senior Teacher,35000.0,19.0,Active
+MB00002104,34.0,F,LS1 XXX,Retail,Area Manager,34000.0,13.0,Active
+MB00002105,22.0,O,N1 XXX,Other,Consultant,51000.0,1.0,Deferred
+MB00002106,51.0,F,CF10 XXX,Finance,Associate,86000.0,30.0,Pensioner
+MB00002107,56.0,M,B2 XXX,Manufacturing,Supervisor,35000.0,35.0,Pensioner
+MB00002108,63.0,F,M2 XXX,Public Service,Grade 7,32000.0,42.0,Pensioner
+MB00002109,72.0,M,E1 XXX,Healthcare,Senior Practitioner,62000.0,51.0,Pensioner
+MB00002110,37.0,F,EH1 XXX,Education,Deputy Head,44000.0,16.0,Active
+MB00002111,25.0,O,SW1A XXX,Retail,Area Manager,30000.0,4.0,Deferred
+MB00002112,74.0,M,L1 XXX,Other,Senior Consultant,85000.0,53.0,Pensioner
+MB00002113,29.0,F,G2 XXX,Finance,Manager,42000.0,8.0,Active
+MB00002114,42.0,F,M3 XXX,Manufacturing,Technician,23000.0,21.0,Active
+MB00002115,31.0,M,BS1 XXX,Public Service,Senior Officer,54000.0,10.0,Deferred
+MB00002116,45.0,O,B3 XXX,Healthcare,Band 7,43000.0,24.0,Active
+MB00002117,52.0,F,N1 XXX,Education,Head of Department,63000.0,31.0,Deferred
+MB00002118,66.0,M,LS2 XXX,Retail,Sales Assistant,18000.0,45.0,Pensioner
+MB00002119,41.0,F,B1 XXX,Other,Manager,64000.0,20.0,Active
+MB00002120,23.0,F,W1A XXX,Finance,Analyst,37000.0,2.0,Active
+MB00002121,38.0,O,B2 XXX,Manufacturing,Senior Technician,33000.0,17.0,Deferred
+MB00002122,59.0,M,EH2 XXX,Public Service,Principal Officer,66000.0,38.0,Pensioner
+MB00002123,46.0,F,L2 XXX,Healthcare,Band 6,48000.0,25.0,Active
+MB00002124,32.0,F,EC1A XXX,Education,Senior Teacher,35000.0,11.0,Active
+MB00002125,54.0,M,M1 XXX,Retail,Store Manager,32000.0,33.0,Pensioner
+MB00002126,22.0,O,CF11 XXX,Other,Consultant,54000.0,1.0,Active
+MB00002127,70.0,F,BS2 XXX,Finance,Senior Analyst,67000.0,49.0,Pensioner
+MB00002128,61.0,M,SW1A XXX,Manufacturing,Production Manager,75000.0,40.0,Pensioner
+MB00002129,58.0,O,EH1 XXX,Public Service,Senior Officer,57000.0,37.0,Pensioner
+MB00002130,47.0,F,E1 XXX,Healthcare,Band 7,43000.0,26.0,Active
+MB00002131,26.0,F,W1A XXX,Education,Teacher,37000.0,5.0,Active
+MB00002132,42.0,M,M3 XXX,Retail,Supervisor,26000.0,21.0,Deferred
+MB00002133,35.0,F,L1 XXX,Other,Associate,58000.0,14.0,Active
+MB00002134,28.0,F,G1 XXX,Finance,Manager,43000.0,7.0,Active
+MB00002135,49.0,M,C1A XXX,Manufacturing,Senior Technician,38000.0,26.0,Active
+MB00002136,53.0,F,EH1 XXX,Public Service,Grade 6,47000.0,32.0,Pensioner
+MB00002137,64.0,M,LS1 XXX,Healthcare,Band 5,35000.0,43.0,Pensioner
+MB00002138,23.0,F,B1 XXX,Education,Senior Teacher,33000.0,2.0,Active
+MB00002139,39.0,O,BS1 XXX,Retail,Sales Assistant,21000.0,18.0,Deferred
+MB00002140,67.0,F,L2 XXX,Other,Associate,55000.0,46.0,Pensioner
+MB00002141,31.0,M,CF11 XXX,Finance,Manager,58000.0,10.0,Active
+MB00002142,48.0,F,BS2 XXX,Manufacturing,Technician,22000.0,27.0,Active
+MB00002143,56.0,O,N1 XXX,Public Service,Senior Officer,52000.0,35.0,Pensioner
+MB00002144,59.0,F,EC1A XXX,Healthcare,Band 6,41000.0,38.0,Deferred
+MB00002145,71.0,M,E1 XXX,Education,Deputy Head,61000.0,50.0,Pensioner
+MB00002146,45.0,F,G2 XXX,Retail,Store Manager,35000.0,24.0,Active
+MB00002147,29.0,M,M1 XXX,Other,Manager,59000.0,8.0,Deferred
+MB00002148,34.0,O,EH2 XXX,Finance,Senior Manager,72000.0,13.0,Active
+MB00002149,38.0,F,B2 XXX,Manufacturing,Production Manager,45000.0,17.0,Active
+MB00002150,57.0,M,L1 XXX,Public Service,Principal Officer,76000.0,36.0,Pensioner
+MB00002151,24.0,F,SW1A XXX,Healthcare,Senior Practitioner,48000.0,3.0,Deferred
+MB00002152,33.0,M,G2 XXX,Education,Head of Department,66000.0,12.0,Active
+MB00002153,43.0,F,L2 XXX,Retail,Area Manager,27000.0,22.0,Active
+MB00002154,52.0,O,B1 XXX,Other,Consultant,71000.0,31.0,Pensioner
+MB00002155,26.0,F,BS1 XXX,Finance,Analyst,25000.0,5.0,Active
+MB00002156,63.0,M,M3 XXX,Manufacturing,Technician,19000.0,42.0,Pensioner
+MB00002157,32.0,F,LS2 XXX,Public Service,Senior Officer,51000.0,11.0,Active
+MB00002158,44.0,M,G1 XXX,Healthcare,Band 5,31000.0,23.0,Deferred
+MB00002159,22.0,F,CF10 XXX,Education,Senior Teacher,38000.0,1.0,Active

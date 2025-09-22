@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 import json
 import io
 import zipfile
+import glob
 from datetime import datetime, timedelta
 import random
 import os
@@ -34,6 +35,12 @@ except ImportError:
         from azure.ai.projects import AIProjectClient
         from azure.ai.agents.models import ListSortOrder
         import pandas as pd
+        
+        # Also import the comparator in fallback
+        try:
+            from data_realism_comparator import DataRealismComparator
+        except ImportError:
+            DataRealismComparator = None
         
         # Use the Azure AI Foundry integration from alpha_data_generatorv2
         PROJECT_ENDPOINT = "https://ais-hack-u5nxuil7gjgjq.services.ai.azure.com/api/projects/lgir-team-alpha"
@@ -344,6 +351,9 @@ CRITICAL:
             allocation_percent: int
             risk_level: str
             effective_date: str
+        
+        # Import DataRealismComparator
+        from data_realism_comparator import DataRealismComparator
         
     except ImportError as e:
         st.error(f"❌ Could not import Azure AI dependencies: {str(e)}")
@@ -797,14 +807,14 @@ def render_financial_analysis(profiles_df, contributions):
         fig_salary = px.box(profiles_df, x='sector', y='annual_salary',
                            title="Salary Distribution by Sector")
         fig_salary.update_xaxes(tickangle=45)
-        fig_salary.update_yaxis(title="Annual Salary (£)")
-        st.plotly_chart(fig_salary, use_container_width=True)
+        fig_salary.update_yaxes(title="Annual Salary (£)")
+        st.plotly_chart(fig_salary, width='stretch')
         
         # Age vs Salary correlation
         fig_age_salary = px.scatter(profiles_df, x='age', y='annual_salary', color='sector',
                                    title="Age vs Salary Correlation",
                                    labels={'age': 'Age', 'annual_salary': 'Annual Salary (£)'})
-        st.plotly_chart(fig_age_salary, use_container_width=True)
+        st.plotly_chart(fig_age_salary, width='stretch')
     
     with col2:
         # Salary by years of service
@@ -813,13 +823,13 @@ def render_financial_analysis(profiles_df, contributions):
                                        title="Salary vs Years of Service",
                                        labels={'years_service': 'Years of Service', 
                                               'annual_salary': 'Annual Salary (£)'})
-        st.plotly_chart(fig_service_salary, use_container_width=True)
+        st.plotly_chart(fig_service_salary, width='stretch')
         
         # Status distribution
         status_counts = profiles_df['status'].value_counts()
         fig_status = px.pie(values=status_counts.values, names=status_counts.index,
                            title="Member Status Distribution")
-        st.plotly_chart(fig_status, use_container_width=True)
+        st.plotly_chart(fig_status, width='stretch')
 
 def render_fund_analysis(allocations):
     """Render fund allocation analysis"""
@@ -900,6 +910,637 @@ def render_quality_metrics(validation_results):
         st.metric("Total Members", validation_results['total_members'])
         allocation_checks = validation_results['fund_allocation_checks']
         st.metric("Members with Allocations", allocation_checks.get('members_with_allocations', 0))
+
+def render_realism_analysis():
+    """Render data realism analysis comparing synthetic vs real UK pension data"""
+    
+    st.subheader("🔬 Data Realism Analysis")
+    st.markdown("**Compare synthetic data against real UK pension industry benchmarks**")
+    
+    # Check for available data files
+    available_files = []
+    for filename in ['generated_pension_data_clean.csv', 'generated_pension_data_fixed.csv', 'generated_pension_data.csv']:
+        try:
+            import os
+            if os.path.exists(filename):
+                available_files.append(filename)
+        except:
+            pass
+    
+    if not available_files:
+        st.warning("⚠️ No synthetic data files found. Please generate data first.")
+        return
+    
+    # File selection
+    selected_file = st.selectbox("Select data file for analysis:", available_files)
+    
+    if st.button("🔍 Analyze Data Realism", type="primary"):
+        with st.spinner("Analyzing data realism against UK pension benchmarks..."):
+            try:
+                # Import the comparator here to avoid import issues
+                from data_realism_comparator import DataRealismComparator
+                
+                # Initialize comparator
+                comparator = DataRealismComparator()
+                
+                # Run comparison
+                results = comparator.compare_synthetic_vs_real(selected_file)
+                
+                if "error" in results:
+                    st.error(f"Analysis failed: {results['error']}")
+                    return
+                
+                # Display overall score
+                overall_score = results.get('overall_realism_score', 0)
+                
+                col1, col2, col3 = st.columns([2, 1, 1])
+                
+                with col1:
+                    # Create gauge chart for overall score
+                    fig_gauge = go.Figure(go.Indicator(
+                        mode = "gauge+number+delta",
+                        value = overall_score * 100,
+                        domain = {'x': [0, 1], 'y': [0, 1]},
+                        title = {'text': "Overall Realism Score (%)"},
+                        delta = {'reference': 80},
+                        gauge = {
+                            'axis': {'range': [None, 100]},
+                            'bar': {'color': "darkblue"},
+                            'steps': [
+                                {'range': [0, 60], 'color': "lightcoral"},
+                                {'range': [60, 80], 'color': "lightyellow"},
+                                {'range': [80, 100], 'color': "lightgreen"}
+                            ],
+                            'threshold': {
+                                'line': {'color': "red", 'width': 4},
+                                'thickness': 0.75,
+                                'value': 90
+                            }
+                        }
+                    ))
+                    fig_gauge.update_layout(height=300)
+                    st.plotly_chart(fig_gauge, use_container_width=True)
+                
+                with col2:
+                    st.metric("Overall Score", f"{overall_score:.1%}")
+                    if overall_score > 0.8:
+                        st.success("✅ Highly Realistic")
+                    elif overall_score > 0.6:
+                        st.warning("⚠️ Moderately Realistic")
+                    else:
+                        st.error("❌ Needs Improvement")
+                
+                with col3:
+                    st.metric("Data File", selected_file)
+                    st.metric("Analysis Date", datetime.now().strftime("%Y-%m-%d"))
+                
+                # Detailed comparison results
+                st.subheader("📊 Detailed Realism Analysis")
+                
+                detailed_comparisons = results.get('detailed_comparisons', {})
+                
+                # Create comparison charts
+                comparison_data = []
+                for category, data in detailed_comparisons.items():
+                    if 'accuracy_score' in data:
+                        comparison_data.append({
+                            'Category': category.title(),
+                            'Accuracy Score': data['accuracy_score'],
+                            'Passes Test': '✅' if data.get('passes_test', False) else '❌',
+                            'Summary': data.get('summary', 'No summary available')
+                        })
+                
+                if comparison_data:
+                    df_comparison = pd.DataFrame(comparison_data)
+                    
+                    # Display comparison table
+                    st.dataframe(df_comparison, use_container_width=True)
+                    
+                    # Create bar chart of accuracy scores
+                    fig_scores = px.bar(df_comparison, x='Category', y='Accuracy Score',
+                                       title="Realism Accuracy by Category",
+                                       color='Accuracy Score',
+                                       color_continuous_scale='RdYlGn')
+                    fig_scores.update_layout(showlegend=False)
+                    st.plotly_chart(fig_scores, use_container_width=True)
+                
+                # Distribution comparisons
+                if 'age' in detailed_comparisons and 'distributions' in detailed_comparisons['age']:
+                    st.subheader("📈 Distribution Comparisons")
+                    
+                    # Create visualization for each distribution
+                    for category in ['age', 'gender', 'sector', 'status']:
+                        if category in detailed_comparisons and 'distributions' in detailed_comparisons[category]:
+                            distributions = detailed_comparisons[category]['distributions']
+                            
+                            categories = list(distributions.keys())
+                            synthetic_values = [distributions[cat]["synthetic"] * 100 for cat in categories]
+                            real_values = [distributions[cat]["real"] * 100 for cat in categories]
+                            
+                            fig = go.Figure()
+                            
+                            fig.add_trace(go.Bar(
+                                name='Synthetic Data',
+                                x=categories,
+                                y=synthetic_values,
+                                marker_color='lightblue'
+                            ))
+                            
+                            fig.add_trace(go.Bar(
+                                name='Real UK Data',
+                                x=categories,
+                                y=real_values,
+                                marker_color='darkblue'
+                            ))
+                            
+                            fig.update_layout(
+                                title=f"{category.title()} Distribution Comparison",
+                                xaxis_title="Categories",
+                                yaxis_title="Percentage (%)",
+                                barmode='group',
+                                height=400
+                            )
+                            
+                            st.plotly_chart(fig, use_container_width=True)
+                
+                # Recommendations
+                recommendations = results.get('recommendations', [])
+                if recommendations:
+                    st.subheader("🎯 Improvement Recommendations")
+                    for rec in recommendations:
+                        if "✅" in rec:
+                            st.success(rec)
+                        elif "⚠️" in rec:
+                            st.warning(rec)
+                        elif "❌" in rec:
+                            st.error(rec)
+                        else:
+                            st.info(rec)
+                
+                # Raw comparison data
+                with st.expander("🔍 View Raw Comparison Data"):
+                    st.json(results)
+                
+            except ImportError as e:
+                st.error(f"Import error: {str(e)}")
+                st.info("Make sure data_realism_comparator.py is in the current directory")
+            except Exception as e:
+                st.error(f"Analysis failed: {str(e)}")
+                import traceback
+                st.code(traceback.format_exc())
+
+def render_realism_analysis():
+    """Render the data realism analysis tab with enhanced histogram visualizations"""
+    st.markdown("### 🔬 Data Realism Analysis")
+    st.markdown("Compare synthetic data against real UK pension industry benchmarks")
+    
+    # File upload for comparison
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        uploaded_file = st.file_uploader(
+            "Upload synthetic pension data CSV for analysis",
+            type=['csv'],
+            help="Upload a CSV file containing synthetic pension data to compare against UK benchmarks"
+        )
+    
+    with col2:
+        st.markdown("**Required Columns:**")
+        st.markdown("- Age\n- Gender\n- Sector\n- AnnualSalary\n- YearsService\n- Status")
+    
+    if uploaded_file is not None:
+        try:
+            # Load and analyze the data
+            comparator = DataRealismComparator()
+            df = comparator.load_data(uploaded_file)
+            
+            st.success(f"✅ Data loaded successfully! {len(df)} records found.")
+            
+            # Run the comparison analysis
+            with st.spinner("🔍 Analyzing data realism..."):
+                results = comparator.analyze_data_realism(df)
+            
+            # Display overall score
+            overall_score = results.get("overall_score", 0) * 100
+            score_color = "🟢" if overall_score >= 80 else "🟡" if overall_score >= 60 else "🔴"
+            
+            st.markdown(f"## {score_color} Overall Realism Score: {overall_score:.1f}%")
+            
+            # Create tabs for different analyses
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "📈 Detailed Metrics", "🎯 Category Analysis", "📊 Enhanced Histograms", "📋 Summary"])
+            
+            with tab1:
+                st.markdown("### Data Realism Overview")
+                
+                # Display key metrics
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Overall Score", f"{overall_score:.1f}%")
+                
+                with col2:
+                    categories_passed = sum(1 for cat in results.get("detailed_comparisons", {}).values() 
+                                          if cat.get("passes_test", False))
+                    total_categories = len(results.get("detailed_comparisons", {}))
+                    st.metric("Categories Passed", f"{categories_passed}/{total_categories}")
+                
+                with col3:
+                    grade = results.get("grade", "Unknown")
+                    st.metric("Data Grade", grade)
+                
+                # Show visualizations
+                st.markdown("### 📊 Comparison Visualizations")
+                
+                # Overall comparison chart
+                fig_overview = comparator.create_comparison_visualizations()
+                st.plotly_chart(fig_overview, use_container_width=True)
+                
+            with tab2:
+                st.markdown("### 📈 Detailed Category Metrics")
+                
+                detailed_comparisons = results.get("detailed_comparisons", {})
+                
+                for category, details in detailed_comparisons.items():
+                    with st.expander(f"📋 {category.title()} Analysis"):
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            accuracy = details.get("accuracy_score", 0) * 100
+                            passes = details.get("passes_test", False)
+                            status = "✅ Pass" if passes else "❌ Fail"
+                            
+                            st.metric(f"{category.title()} Accuracy", f"{accuracy:.1f}%")
+                            st.markdown(f"**Status:** {status}")
+                        
+                        with col2:
+                            # Show distribution details if available
+                            distributions = details.get("distributions", {})
+                            if distributions:
+                                st.markdown("**Distribution Comparison:**")
+                                for key, values in distributions.items():
+                                    synthetic = values.get("synthetic", 0) * 100
+                                    real = values.get("real", 0) * 100
+                                    st.markdown(f"- {key}: Synthetic {synthetic:.1f}% vs Real {real:.1f}%")
+            
+            with tab3:
+                st.markdown("### 🎯 Individual Category Analysis")
+                
+                # Create sector-specific charts
+                detailed_comparisons = results.get("detailed_comparisons", {})
+                
+                # Age distribution
+                if "age" in detailed_comparisons:
+                    st.markdown("#### 👥 Age Distribution")
+                    age_fig = comparator.create_age_comparison_chart()
+                    st.plotly_chart(age_fig, use_container_width=True)
+                
+                # Salary analysis
+                if "salary" in detailed_comparisons:
+                    st.markdown("#### 💰 Salary Analysis")
+                    salary_fig = comparator.create_salary_comparison_chart()
+                    st.plotly_chart(salary_fig, use_container_width=True)
+                
+                # Gender distribution
+                if "gender" in detailed_comparisons:
+                    st.markdown("#### ⚖️ Gender Distribution")
+                    gender_data = detailed_comparisons["gender"]["distributions"]
+                    
+                    categories = list(gender_data.keys())
+                    synthetic_values = [gender_data[cat]["synthetic"] * 100 for cat in categories]
+                    real_values = [gender_data[cat]["real"] * 100 for cat in categories]
+                    
+                    fig = go.Figure(data=[
+                        go.Bar(name='Synthetic', x=categories, y=synthetic_values, marker_color='lightpink'),
+                        go.Bar(name='Real UK', x=categories, y=real_values, marker_color='darkred')
+                    ])
+                    fig.update_layout(title="Gender Distribution Comparison", barmode='group', height=400)
+                    st.plotly_chart(fig, use_container_width=True)
+            
+            with tab4:
+                st.markdown("### 📊 Enhanced Histogram Analysis")
+                st.markdown("Detailed statistical visualizations for comprehensive data analysis")
+                
+                # Create sub-tabs for different histogram types
+                hist_tab1, hist_tab2, hist_tab3, hist_tab4, hist_tab5, hist_tab6 = st.tabs([
+                    "👥 Age Histograms", "💰 Salary Histograms", "⏱️ Service Histograms", 
+                    "🌍 Geographic Histograms", "🎯 Accuracy Scores", "⚠️ Error Analysis"
+                ])
+                
+                with hist_tab1:
+                    st.markdown("#### Age Distribution Analysis")
+                    try:
+                        age_hist = comparator.create_age_histogram()
+                        st.plotly_chart(age_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate age histogram: {str(e)}")
+                
+                with hist_tab2:
+                    st.markdown("#### Salary Distribution Analysis")
+                    try:
+                        salary_hist = comparator.create_salary_histogram()
+                        st.plotly_chart(salary_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate salary histogram: {str(e)}")
+                
+                with hist_tab3:
+                    st.markdown("#### Years of Service Analysis")
+                    try:
+                        service_hist = comparator.create_service_histogram()
+                        st.plotly_chart(service_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate service histogram: {str(e)}")
+                
+                with hist_tab4:
+                    st.markdown("#### Geographic Distribution Analysis")
+                    try:
+                        geo_hist = comparator.create_geographic_histogram()
+                        st.plotly_chart(geo_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate geographic histogram: {str(e)}")
+                
+                with hist_tab5:
+                    st.markdown("#### Category Accuracy Scores")
+                    try:
+                        accuracy_hist = comparator.create_accuracy_scores_histogram()
+                        st.plotly_chart(accuracy_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate accuracy histogram: {str(e)}")
+                
+                with hist_tab6:
+                    st.markdown("#### Comprehensive Error Analysis")
+                    try:
+                        error_hist = comparator.create_error_analysis_histogram()
+                        st.plotly_chart(error_hist, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate error analysis histogram: {str(e)}")
+            
+            with tab5:
+                st.markdown("### 📋 Analysis Summary")
+                
+                # Summary statistics
+                st.markdown("#### Key Findings:")
+                
+                findings = results.get("findings", [])
+                if findings:
+                    for finding in findings:
+                        st.markdown(f"• {finding}")
+                else:
+                    st.markdown("• Analysis completed successfully")
+                    st.markdown(f"• Overall realism score: {overall_score:.1f}%")
+                    st.markdown(f"• Data quality grade: {results.get('grade', 'Not available')}")
+                
+                # Recommendations
+                st.markdown("#### Recommendations:")
+                recommendations = results.get("recommendations", [])
+                if recommendations:
+                    for rec in recommendations:
+                        st.markdown(f"• {rec}")
+                else:
+                    if overall_score >= 80:
+                        st.markdown("• Excellent data quality - no immediate improvements needed")
+                    elif overall_score >= 60:
+                        st.markdown("• Good data quality - minor adjustments could improve realism")
+                    else:
+                        st.markdown("• Consider reviewing data generation parameters")
+                        st.markdown("• Focus on categories with low accuracy scores")
+                
+                # Export option
+                st.markdown("#### Export Results")
+                if st.button("📄 Download Analysis Report"):
+                    # Create a summary report
+                    report = f"""
+Data Realism Analysis Report
+============================
+
+Overall Score: {overall_score:.1f}%
+Grade: {results.get('grade', 'Not available')}
+Analysis Date: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Category Breakdown:
+"""
+                    for category, details in detailed_comparisons.items():
+                        accuracy = details.get("accuracy_score", 0) * 100
+                        status = "Pass" if details.get("passes_test", False) else "Fail"
+                        report += f"- {category.title()}: {accuracy:.1f}% ({status})\n"
+                    
+                    st.download_button(
+                        label="Download Report",
+                        data=report,
+                        file_name=f"realism_analysis_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
+                
+        except Exception as e:
+            st.error(f"❌ Error analyzing data: {str(e)}")
+            st.markdown("Please check that your CSV file contains the required columns and is properly formatted.")
+    
+    else:
+        st.info("👆 Upload a CSV file to begin the realism analysis")
+        
+        # Show example data format
+        st.markdown("#### Example Data Format:")
+        example_data = {
+            'MemberID': ['M001', 'M002', 'M003'],
+            'Age': [35, 42, 28],
+            'Gender': ['Female', 'Male', 'Female'],
+            'Sector': ['Public', 'Private', 'Public'],
+            'AnnualSalary': [45000, 65000, 38000],
+            'YearsService': [8, 15, 3],
+            'Status': ['Active', 'Active', 'Deferred']
+        }
+        
+        example_df = pd.DataFrame(example_data)
+        st.dataframe(example_df, use_container_width=True)
+
+def analyze_data_realism(file_path: str):
+    """Perform comprehensive realism analysis on selected data file"""
+    
+    with st.spinner("🔍 Performing comprehensive realism analysis..."):
+        try:
+            # Initialize the comparator
+            comparator = DataRealismComparator()
+            
+            # Perform comparison
+            comparison_results = comparator.compare_synthetic_vs_real(file_path)
+            
+            if 'error' in comparison_results:
+                st.error(f"❌ Analysis failed: {comparison_results['error']}")
+                return
+            
+            # Store results in session state
+            st.session_state.realism_analysis = comparison_results
+            st.session_state.realism_comparator = comparator
+            
+            st.success("✅ Realism analysis complete!")
+            
+        except Exception as e:
+            st.error(f"❌ Error during realism analysis: {str(e)}")
+
+def display_realism_results():
+    """Display comprehensive realism analysis results"""
+    
+    if 'realism_analysis' not in st.session_state:
+        return
+    
+    results = st.session_state.realism_analysis
+    comparator = st.session_state.get('realism_comparator')
+    
+    # Overall realism score
+    st.markdown("### 🎯 Overall Realism Assessment")
+    
+    overall_score = results.get('overall_realism_score', 0)
+    
+    # Create score indicator
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        # Realism gauge
+        if comparator:
+            figures = comparator.create_comparison_visualizations()
+            if 'realism_gauge' in figures:
+                st.plotly_chart(figures['realism_gauge'], use_container_width=True)
+    
+    # Score interpretation
+    if overall_score >= 0.8:
+        st.success(f"🏆 **Excellent Realism**: {overall_score:.1%} - Synthetic data closely matches UK pension patterns")
+    elif overall_score >= 0.6:
+        st.warning(f"⚠️ **Good Realism**: {overall_score:.1%} - Some areas need improvement")
+    else:
+        st.error(f"❌ **Poor Realism**: {overall_score:.1%} - Significant improvements needed")
+    
+    # Detailed category analysis
+    st.markdown("### 📊 Category-by-Category Analysis")
+    
+    detailed_comparisons = results.get('detailed_comparisons', {})
+    
+    # Create tabs for different categories
+    if detailed_comparisons:
+        category_tabs = st.tabs([
+            "👥 Age", "⚧️ Gender", "🏢 Sector", 
+            "💰 Salary", "🗺️ Geographic", "📋 Status"
+        ])
+        
+        categories = ['age', 'gender', 'sector', 'salary', 'geographic', 'status']
+        
+        for i, (tab, category) in enumerate(zip(category_tabs, categories)):
+            with tab:
+                if category in detailed_comparisons:
+                    render_category_analysis(category, detailed_comparisons[category], comparator)
+                else:
+                    st.info(f"No analysis available for {category} category")
+    
+    # Recommendations
+    st.markdown("### 💡 Improvement Recommendations")
+    
+    recommendations = results.get('recommendations', [])
+    if recommendations:
+        for rec in recommendations:
+            if "❌" in rec:
+                st.error(rec)
+            elif "⚠️" in rec:
+                st.warning(rec)
+            else:
+                st.success(rec)
+    else:
+        st.info("No specific recommendations available")
+    
+    # Export analysis report
+    st.markdown("### 📄 Export Analysis Report")
+    
+    if st.button("📥 Download Realism Analysis Report"):
+        export_realism_report(results)
+
+def render_category_analysis(category: str, category_data: dict, comparator):
+    """Render analysis for a specific category"""
+    
+    # Category score
+    accuracy_score = category_data.get('accuracy_score', 0)
+    summary = category_data.get('summary', '')
+    passes_test = category_data.get('passes_test', False)
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        # Score display
+        if passes_test:
+            st.success(f"✅ **{summary}**")
+        else:
+            st.error(f"❌ **{summary}**")
+        
+        # Additional metrics
+        if category == 'salary':
+            sector_analysis = category_data.get('sector_analysis', {})
+            if sector_analysis:
+                st.markdown("**Sector Performance:**")
+                for sector, data in sector_analysis.items():
+                    sector_score = data.get('accuracy_score', 0)
+                    status = "✅" if data.get('passes_test', False) else "❌"
+                    st.markdown(f"{status} {sector}: {sector_score:.1%}")
+        
+        elif category == 'geographic':
+            regions_covered = category_data.get('regions_covered', 0)
+            st.metric("Regions Covered", regions_covered)
+    
+    with col2:
+        # Visualization
+        if comparator:
+            figures = comparator.create_comparison_visualizations()
+            chart_key = f"{category}_comparison"
+            
+            if chart_key in figures:
+                st.plotly_chart(figures[chart_key], use_container_width=True)
+            elif category == 'salary' and 'salary_comparison' in figures:
+                st.plotly_chart(figures['salary_comparison'], use_container_width=True)
+    
+    # Detailed distributions
+    if 'distributions' in category_data:
+        st.markdown("**Detailed Comparison:**")
+        distributions = category_data['distributions']
+        
+        comparison_df = pd.DataFrame([
+            {
+                'Category': cat,
+                'Synthetic (%)': f"{data['synthetic']:.1%}",
+                'Real UK (%)': f"{data['real']:.1%}",
+                'Difference (%)': f"{data['difference']:.1%}",
+                'Error (%)': f"{data['percentage_error']:.1f}%"
+            }
+            for cat, data in distributions.items()
+        ])
+        
+        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+
+def export_realism_report(results: dict):
+    """Export comprehensive realism analysis report"""
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Create comprehensive report
+    report = {
+        "mission_name": "Mission Alpha - Data Realism Analysis",
+        "analysis_timestamp": timestamp,
+        "overall_assessment": {
+            "realism_score": results.get('overall_realism_score', 0),
+            "grade": "Excellent" if results.get('overall_realism_score', 0) >= 0.8 else 
+                    "Good" if results.get('overall_realism_score', 0) >= 0.6 else "Needs Improvement"
+        },
+        "detailed_analysis": results.get('detailed_comparisons', {}),
+        "recommendations": results.get('recommendations', []),
+        "uk_benchmarks_used": "ONS, TPR, and industry sources",
+        "methodology": "Statistical comparison against real UK pension industry patterns",
+        "classification": "Synthetic Data Quality Assessment"
+    }
+    
+    # Convert to JSON
+    report_json = json.dumps(report, indent=2, default=str)
+    
+    st.download_button(
+        label="📊 Download Realism Analysis Report (JSON)",
+        data=report_json,
+        file_name=f"realism_analysis_report_{timestamp}.json",
+        mime="application/json"
+    )
 
 def data_export_interface():
     """Data export and download interface"""
@@ -1014,8 +1655,8 @@ def main():
     # Main navigation
     selected = option_menu(
         menu_title=None,
-        options=["🚀 AI Configuration", "🎯 Data Generation", "📊 Intelligence Dashboard", "📁 Export Mission Data"],
-        icons=["gear", "database", "graph-up", "download"],
+        options=["🚀 AI Configuration", "🎯 Data Generation", "📊 Intelligence Dashboard", "� Data Realism", "�📁 Export Mission Data"],
+        icons=["gear", "database", "graph-up", "microscope", "download"],
         menu_icon="cast",
         default_index=0,
         orientation="horizontal",
@@ -1039,7 +1680,9 @@ def main():
         data_generation_interface()
     elif selected == "📊 Intelligence Dashboard":
         data_visualization_dashboard()
-    elif selected == "📁 Export Mission Data":
+    elif selected == "� Data Realism":
+        render_realism_analysis()
+    elif selected == "�📁 Export Mission Data":
         data_export_interface()
     
     # Footer

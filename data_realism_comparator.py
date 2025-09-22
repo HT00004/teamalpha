@@ -110,8 +110,28 @@ class DataRealismComparator:
         """
         
         try:
-            # Load synthetic data
-            synthetic_df = pd.read_csv(synthetic_data_path)
+            # Load synthetic data with multiple encoding attempts
+            synthetic_df = None
+            encodings = ['utf-8', 'latin1', 'cp1252', 'iso-8859-1']
+            
+            for encoding in encodings:
+                try:
+                    synthetic_df = pd.read_csv(synthetic_data_path, encoding=encoding)
+                    print(f"Successfully loaded data with {encoding} encoding")
+                    break
+                except UnicodeDecodeError:
+                    continue
+            
+            if synthetic_df is None:
+                raise Exception("Could not load CSV file with any supported encoding")
+            
+            # Clean any currency symbols and convert salary columns to numeric
+            if 'AnnualSalary' in synthetic_df.columns:
+                synthetic_df['AnnualSalary'] = synthetic_df['AnnualSalary'].astype(str).str.replace('£', '').str.replace(',', '').str.replace('$', '')
+                synthetic_df['AnnualSalary'] = pd.to_numeric(synthetic_df['AnnualSalary'], errors='coerce')
+            
+            # Handle any missing or invalid data
+            synthetic_df = synthetic_df.dropna(subset=['Age', 'Gender', 'Sector'] if all(col in synthetic_df.columns for col in ['Age', 'Gender', 'Sector']) else synthetic_df.columns[:3])
             
             # Initialize results
             comparison_results = {
@@ -172,8 +192,24 @@ class DataRealismComparator:
     def compare_age_distribution(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare age distribution patterns"""
         
+        # Handle different possible column names
+        age_column = None
+        for col in ['Age', 'age', 'Age_Years', 'member_age']:
+            if col in df.columns:
+                age_column = col
+                break
+        
+        if age_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Age column not found in data",
+                "passes_test": False,
+                "error": "Age column not found"
+            }
+        
         # Create age bins
-        df['age_bin'] = pd.cut(df['Age'], 
+        df['age_bin'] = pd.cut(df[age_column], 
                               bins=[21, 29, 39, 49, 59, 68], 
                               labels=['22-29', '30-39', '40-49', '50-59', '60-67'],
                               include_lowest=True)
@@ -209,7 +245,23 @@ class DataRealismComparator:
     def compare_gender_distribution(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare gender distribution patterns"""
         
-        synthetic_dist = df['Gender'].value_counts(normalize=True).to_dict()
+        # Handle different possible column names
+        gender_column = None
+        for col in ['Gender', 'gender', 'Gender_Code', 'sex']:
+            if col in df.columns:
+                gender_column = col
+                break
+        
+        if gender_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Gender column not found in data",
+                "passes_test": False,
+                "error": "Gender column not found"
+            }
+        
+        synthetic_dist = df[gender_column].value_counts(normalize=True).to_dict()
         real_dist = self.uk_benchmarks["gender_distribution"]
         
         differences = {}
@@ -239,7 +291,23 @@ class DataRealismComparator:
     def compare_sector_distribution(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare sector distribution patterns"""
         
-        synthetic_dist = df['Sector'].value_counts(normalize=True).to_dict()
+        # Handle different possible column names
+        sector_column = None
+        for col in ['Sector', 'sector', 'Industry', 'employment_sector']:
+            if col in df.columns:
+                sector_column = col
+                break
+        
+        if sector_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Sector column not found in data",
+                "passes_test": False,
+                "error": "Sector column not found"
+            }
+        
+        synthetic_dist = df[sector_column].value_counts(normalize=True).to_dict()
         real_dist = self.uk_benchmarks["sector_distribution"]
         
         differences = {}
@@ -269,11 +337,33 @@ class DataRealismComparator:
     def compare_salary_patterns(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare salary patterns by sector"""
         
+        # Handle different possible column names
+        salary_column = None
+        for col in ['AnnualSalary', 'annual_salary', 'Salary', 'salary', 'Annual_Salary']:
+            if col in df.columns:
+                salary_column = col
+                break
+        
+        sector_column = None
+        for col in ['Sector', 'sector', 'Industry', 'employment_sector']:
+            if col in df.columns:
+                sector_column = col
+                break
+        
+        if salary_column is None or sector_column is None:
+            return {
+                "overall_accuracy": 0,
+                "sector_analysis": {},
+                "summary": f"Required columns not found (salary: {salary_column}, sector: {sector_column})",
+                "passes_test": False,
+                "error": "Salary or sector column not found"
+            }
+        
         sector_salary_analysis = {}
         overall_accuracy = 0
         
         for sector in self.uk_benchmarks["salary_ranges"]:
-            sector_data = df[df['Sector'] == sector]['AnnualSalary']
+            sector_data = df[df[sector_column] == sector][salary_column]
             
             if len(sector_data) > 0:
                 real_ranges = self.uk_benchmarks["salary_ranges"][sector]
@@ -314,6 +404,23 @@ class DataRealismComparator:
     def compare_geographic_distribution(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare geographic distribution using postcode patterns"""
         
+        # Handle different possible column names
+        postcode_column = None
+        for col in ['Postcode', 'postcode', 'PostCode', 'postal_code']:
+            if col in df.columns:
+                postcode_column = col
+                break
+        
+        if postcode_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Postcode column not found in data",
+                "passes_test": False,
+                "regions_covered": 0,
+                "error": "Postcode column not found"
+            }
+        
         # Map postcodes to regions
         postcode_to_region = {
             'EC1': 'London', 'SW1': 'London', 'W1A': 'London', 'E1': 'London', 'N1': 'London',
@@ -328,7 +435,7 @@ class DataRealismComparator:
         }
         
         # Extract postcode area from full postcode
-        df['postcode_area'] = df['Postcode'].str.split(' ').str[0]
+        df['postcode_area'] = df[postcode_column].str.split(' ').str[0]
         df['region'] = df['postcode_area'].map(postcode_to_region)
         
         synthetic_dist = df['region'].value_counts(normalize=True).to_dict()
@@ -365,7 +472,23 @@ class DataRealismComparator:
     def compare_status_distribution(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare member status distribution"""
         
-        synthetic_dist = df['Status'].value_counts(normalize=True).to_dict()
+        # Handle different possible column names
+        status_column = None
+        for col in ['Status', 'status', 'Member_Status', 'member_status']:
+            if col in df.columns:
+                status_column = col
+                break
+        
+        if status_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Status column not found in data",
+                "passes_test": False,
+                "error": "Status column not found"
+            }
+        
+        synthetic_dist = df[status_column].value_counts(normalize=True).to_dict()
         real_dist = self.uk_benchmarks["status_distribution"]
         
         differences = {}
@@ -395,8 +518,24 @@ class DataRealismComparator:
     def compare_service_patterns(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Compare years of service patterns"""
         
+        # Handle different possible column names
+        service_column = None
+        for col in ['YearsService', 'years_service', 'Years_Service', 'service_years']:
+            if col in df.columns:
+                service_column = col
+                break
+        
+        if service_column is None:
+            return {
+                "accuracy_score": 0,
+                "distributions": {},
+                "summary": "Years of service column not found in data",
+                "passes_test": False,
+                "error": "Years of service column not found"
+            }
+        
         # Create service bins
-        df['service_bin'] = pd.cut(df['YearsService'], 
+        df['service_bin'] = pd.cut(df[service_column], 
                                   bins=[0, 5, 15, 25, 35, 50], 
                                   labels=['0-5', '6-15', '16-25', '26-35', '36+'],
                                   include_lowest=True)
@@ -490,9 +629,18 @@ class DataRealismComparator:
         figures["gender_comparison"] = self.create_distribution_comparison("gender", "Gender Distribution") 
         figures["sector_comparison"] = self.create_distribution_comparison("sector", "Sector Distribution")
         figures["status_comparison"] = self.create_distribution_comparison("status", "Status Distribution")
+        figures["service_comparison"] = self.create_distribution_comparison("service", "Years of Service Distribution")
         
         # Salary comparison by sector
         figures["salary_comparison"] = self.create_salary_comparison()
+        
+        # Enhanced histogram visualizations
+        figures["age_histogram"] = self.create_age_histogram()
+        figures["salary_histogram"] = self.create_salary_histogram()
+        figures["service_histogram"] = self.create_service_histogram()
+        figures["geographic_histogram"] = self.create_geographic_histogram()
+        figures["accuracy_scores_histogram"] = self.create_accuracy_scores_histogram()
+        figures["error_analysis_histogram"] = self.create_error_analysis_histogram()
         
         return figures
     
@@ -601,5 +749,391 @@ class DataRealismComparator:
             barmode='group',
             height=400
         )
+        
+        return fig
+    
+    def create_age_histogram(self) -> go.Figure:
+        """Create detailed age distribution histogram"""
+        
+        if "age" not in self.comparison_results.get("detailed_comparisons", {}):
+            return go.Figure().add_annotation(text="No age data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        age_data = self.comparison_results["detailed_comparisons"]["age"]
+        distributions = age_data.get("distributions", {})
+        
+        if not distributions:
+            return go.Figure().add_annotation(text="No age distribution data", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        age_groups = list(distributions.keys())
+        synthetic_values = [distributions[group]["synthetic"] * 100 for group in age_groups]
+        real_values = [distributions[group]["real"] * 100 for group in age_groups]
+        errors = [distributions[group]["percentage_error"] for group in age_groups]
+        
+        # Create subplot with secondary y-axis
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('Age Distribution Comparison', 'Percentage Error by Age Group'),
+            specs=[[{"secondary_y": False}], [{"secondary_y": False}]],
+            vertical_spacing=0.15
+        )
+        
+        # Main histogram comparison
+        fig.add_trace(
+            go.Bar(name='Synthetic Data (%)', x=age_groups, y=synthetic_values, 
+                   marker_color='lightblue', opacity=0.7),
+            row=1, col=1
+        )
+        
+        fig.add_trace(
+            go.Bar(name='Real UK Data (%)', x=age_groups, y=real_values, 
+                   marker_color='darkblue', opacity=0.8),
+            row=1, col=1
+        )
+        
+        # Error analysis
+        fig.add_trace(
+            go.Bar(name='Percentage Error', x=age_groups, y=errors, 
+                   marker_color='red', opacity=0.6, showlegend=False),
+            row=2, col=1
+        )
+        
+        fig.update_layout(
+            title="Detailed Age Distribution Analysis",
+            height=600,
+            barmode='group'
+        )
+        
+        fig.update_xaxes(title_text="Age Groups", row=2, col=1)
+        fig.update_yaxes(title_text="Percentage (%)", row=1, col=1)
+        fig.update_yaxes(title_text="Error (%)", row=2, col=1)
+        
+        return fig
+    
+    def create_salary_histogram(self) -> go.Figure:
+        """Create detailed salary distribution histogram"""
+        
+        if "salary" not in self.comparison_results.get("detailed_comparisons", {}):
+            return go.Figure().add_annotation(text="No salary data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        salary_data = self.comparison_results["detailed_comparisons"]["salary"]
+        sector_analysis = salary_data.get("sector_analysis", {})
+        
+        if not sector_analysis:
+            return go.Figure().add_annotation(text="No salary analysis data", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        sectors = list(sector_analysis.keys())
+        synthetic_medians = [sector_analysis[sector]["synthetic_median"] for sector in sectors]
+        real_medians = [sector_analysis[sector]["real_median"] for sector in sectors]
+        accuracy_scores = [sector_analysis[sector]["accuracy_score"] * 100 for sector in sectors]
+        median_differences = [sector_analysis[sector]["median_difference"] for sector in sectors]
+        
+        # Create subplot
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=('Median Salary Comparison', 'Salary Accuracy by Sector',
+                          'Median Difference (£)', 'Salary Range Analysis'),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}],
+                   [{"secondary_y": False}, {"secondary_y": False}]],
+            vertical_spacing=0.12,
+            horizontal_spacing=0.1
+        )
+        
+        # Median comparison
+        fig.add_trace(
+            go.Bar(name='Synthetic', x=sectors, y=synthetic_medians, 
+                   marker_color='lightgreen', showlegend=True),
+            row=1, col=1
+        )
+        
+        fig.add_trace(
+            go.Bar(name='Real UK', x=sectors, y=real_medians, 
+                   marker_color='darkgreen', showlegend=True),
+            row=1, col=1
+        )
+        
+        # Accuracy scores
+        color_scale = ['red' if score < 70 else 'orange' if score < 80 else 'green' 
+                      for score in accuracy_scores]
+        
+        fig.add_trace(
+            go.Bar(name='Accuracy %', x=sectors, y=accuracy_scores, 
+                   marker_color=color_scale, showlegend=False),
+            row=1, col=2
+        )
+        
+        # Median differences
+        fig.add_trace(
+            go.Bar(name='Difference £', x=sectors, y=median_differences, 
+                   marker_color='purple', showlegend=False),
+            row=2, col=1
+        )
+        
+        # Range analysis (simplified)
+        synthetic_ranges = []
+        real_ranges = []
+        for sector in sectors:
+            real_range = self.uk_benchmarks["salary_ranges"][sector]
+            synthetic_ranges.append(real_range["max"] - real_range["min"])  # Approximation
+            real_ranges.append(real_range["max"] - real_range["min"])
+        
+        fig.add_trace(
+            go.Bar(name='Salary Range', x=sectors, y=real_ranges, 
+                   marker_color='gold', showlegend=False),
+            row=2, col=2
+        )
+        
+        fig.update_layout(
+            title="Comprehensive Salary Analysis",
+            height=800,
+            showlegend=True
+        )
+        
+        # Update axes
+        fig.update_xaxes(tickangle=45)
+        fig.update_yaxes(title_text="Salary (£)", row=1, col=1)
+        fig.update_yaxes(title_text="Accuracy (%)", row=1, col=2)
+        fig.update_yaxes(title_text="Difference (£)", row=2, col=1)
+        fig.update_yaxes(title_text="Range (£)", row=2, col=2)
+        
+        return fig
+    
+    def create_service_histogram(self) -> go.Figure:
+        """Create years of service distribution histogram"""
+        
+        if "service" not in self.comparison_results.get("detailed_comparisons", {}):
+            return go.Figure().add_annotation(text="No service data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        service_data = self.comparison_results["detailed_comparisons"]["service"]
+        distributions = service_data.get("distributions", {})
+        
+        if not distributions:
+            return go.Figure().add_annotation(text="No service distribution data", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        service_ranges = list(distributions.keys())
+        synthetic_values = [distributions[range_]["synthetic"] * 100 for range_ in service_ranges]
+        real_values = [distributions[range_]["real"] * 100 for range_ in service_ranges]
+        differences = [distributions[range_]["difference"] * 100 for range_ in service_ranges]
+        
+        # Create histogram with error overlay
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            name='Synthetic Data',
+            x=service_ranges,
+            y=synthetic_values,
+            marker_color='lightcoral',
+            opacity=0.7
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='Real UK Data', 
+            x=service_ranges,
+            y=real_values,
+            marker_color='darkred',
+            opacity=0.8
+        ))
+        
+        # Add difference as line plot
+        fig.add_trace(go.Scatter(
+            name='Absolute Difference',
+            x=service_ranges,
+            y=differences,
+            mode='lines+markers',
+            line=dict(color='black', width=3),
+            marker=dict(size=8),
+            yaxis='y2'
+        ))
+        
+        fig.update_layout(
+            title="Years of Service Distribution Analysis",
+            xaxis_title="Years of Service",
+            yaxis_title="Percentage (%)",
+            yaxis2=dict(
+                title="Difference (%)",
+                overlaying='y',
+                side='right'
+            ),
+            barmode='group',
+            height=500
+        )
+        
+        return fig
+    
+    def create_geographic_histogram(self) -> go.Figure:
+        """Create geographic distribution histogram"""
+        
+        if "geographic" not in self.comparison_results.get("detailed_comparisons", {}):
+            return go.Figure().add_annotation(text="No geographic data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        geo_data = self.comparison_results["detailed_comparisons"]["geographic"]
+        distributions = geo_data.get("distributions", {})
+        
+        if not distributions:
+            return go.Figure().add_annotation(text="No geographic distribution data", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        regions = list(distributions.keys())
+        synthetic_values = [distributions[region]["synthetic"] * 100 for region in regions]
+        real_values = [distributions[region]["real"] * 100 for region in regions]
+        errors = [distributions[region]["percentage_error"] for region in regions]
+        
+        # Create horizontal bar chart for better region name visibility
+        fig = make_subplots(
+            rows=1, cols=2,
+            subplot_titles=('Regional Distribution Comparison', 'Percentage Error by Region'),
+            specs=[[{"secondary_y": False}, {"secondary_y": False}]],
+            horizontal_spacing=0.15
+        )
+        
+        fig.add_trace(
+            go.Bar(name='Synthetic %', y=regions, x=synthetic_values, 
+                   orientation='h', marker_color='lightblue', opacity=0.7),
+            row=1, col=1
+        )
+        
+        fig.add_trace(
+            go.Bar(name='Real UK %', y=regions, x=real_values, 
+                   orientation='h', marker_color='darkblue', opacity=0.8),
+            row=1, col=1
+        )
+        
+        fig.add_trace(
+            go.Bar(name='Error %', y=regions, x=errors, 
+                   orientation='h', marker_color='red', opacity=0.6, showlegend=False),
+            row=1, col=2
+        )
+        
+        fig.update_layout(
+            title="Geographic Distribution Analysis",
+            height=max(400, len(regions) * 40),  # Dynamic height based on regions
+            barmode='group'
+        )
+        
+        fig.update_xaxes(title_text="Percentage (%)", row=1, col=1)
+        fig.update_xaxes(title_text="Error (%)", row=1, col=2)
+        
+        return fig
+    
+    def create_accuracy_scores_histogram(self) -> go.Figure:
+        """Create overall accuracy scores comparison histogram"""
+        
+        detailed_comparisons = self.comparison_results.get("detailed_comparisons", {})
+        
+        if not detailed_comparisons:
+            return go.Figure().add_annotation(text="No comparison data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        categories = []
+        accuracy_scores = []
+        pass_status = []
+        
+        for category, data in detailed_comparisons.items():
+            if "accuracy_score" in data:
+                categories.append(category.title())
+                score = data["accuracy_score"] * 100
+                accuracy_scores.append(score)
+                pass_status.append("Pass" if data.get("passes_test", False) else "Fail")
+        
+        # Color coding based on pass/fail
+        colors = ['green' if status == 'Pass' else 'red' for status in pass_status]
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            name='Accuracy Score',
+            x=categories,
+            y=accuracy_scores,
+            marker_color=colors,
+            text=[f"{score:.1f}%" for score in accuracy_scores],
+            textposition='outside'
+        ))
+        
+        # Add threshold lines
+        fig.add_hline(y=80, line_dash="dash", line_color="green", 
+                     annotation_text="Excellence Threshold (80%)")
+        fig.add_hline(y=60, line_dash="dash", line_color="orange", 
+                     annotation_text="Good Threshold (60%)")
+        
+        fig.update_layout(
+            title="Category Accuracy Scores Overview",
+            xaxis_title="Analysis Categories",
+            yaxis_title="Accuracy Score (%)",
+            height=500,
+            showlegend=False
+        )
+        
+        fig.update_xaxes(tickangle=45)
+        fig.update_yaxes(range=[0, 105])
+        
+        return fig
+    
+    def create_error_analysis_histogram(self) -> go.Figure:
+        """Create comprehensive error analysis histogram"""
+        
+        detailed_comparisons = self.comparison_results.get("detailed_comparisons", {})
+        
+        if not detailed_comparisons:
+            return go.Figure().add_annotation(text="No error analysis data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        # Collect error data from all categories
+        error_data = []
+        
+        for category, data in detailed_comparisons.items():
+            if "distributions" in data:
+                distributions = data["distributions"]
+                for subcategory, metrics in distributions.items():
+                    error_data.append({
+                        'category': category.title(),
+                        'subcategory': subcategory,
+                        'percentage_error': metrics.get('percentage_error', 0),
+                        'absolute_difference': metrics.get('difference', 0) * 100
+                    })
+        
+        if not error_data:
+            return go.Figure().add_annotation(text="No detailed error data available", 
+                                            xref="paper", yref="paper", x=0.5, y=0.5)
+        
+        # Create error distribution histogram
+        percentage_errors = [item['percentage_error'] for item in error_data]
+        absolute_differences = [item['absolute_difference'] for item in error_data]
+        categories = [f"{item['category']}-{item['subcategory']}" for item in error_data]
+        
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('Percentage Error Distribution', 'Absolute Difference Distribution'),
+            vertical_spacing=0.15
+        )
+        
+        # Percentage errors
+        fig.add_trace(
+            go.Histogram(x=percentage_errors, nbinsx=20, name='Percentage Error', 
+                        marker_color='red', opacity=0.7),
+            row=1, col=1
+        )
+        
+        # Absolute differences  
+        fig.add_trace(
+            go.Histogram(x=absolute_differences, nbinsx=20, name='Absolute Difference', 
+                        marker_color='orange', opacity=0.7, showlegend=False),
+            row=2, col=1
+        )
+        
+        fig.update_layout(
+            title="Comprehensive Error Analysis Distribution",
+            height=600
+        )
+        
+        fig.update_xaxes(title_text="Percentage Error (%)", row=1, col=1)
+        fig.update_xaxes(title_text="Absolute Difference (%)", row=2, col=1)
+        fig.update_yaxes(title_text="Frequency", row=1, col=1)
+        fig.update_yaxes(title_text="Frequency", row=2, col=1)
         
         return fig
